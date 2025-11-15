@@ -1,0 +1,282 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+
+/*-------------------Base & Dark Mode Setup-------------------*/
+
+body {
+    padding: 0;
+    margin: 0;
+    font-family: 'Rubik', sans-serif;
+    /* Light Mode (default) */
+    background-color: #F4F6FA; /* Using a light grey from original for bg */
+    color: #313E51;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Hide the theme-toggle checkbox */
+.theme-toggle-input {
+    display: none;
+}
+
+/* This .page-wrapper holds all content */
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    box-sizing: border-box; /* Ensures padding doesn't break layout */
+    
+    /* These variables will be updated for dark mode */
+    --bg-color: #F4F6FA;
+    --text-color: #313E51;
+    --element-bg: #FFFFFF;
+    --element-shadow: 0px 16px 40px 0px rgba(143, 160, 193, .14);
+    --input-border: #DDE2E8;
+    --icon-bg: #F4F6FA;     /* Light grey background for A,B,C icons */
+    --icon-color: #626C7F;  /* Dark grey text for A,B,C icons */
+
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* --- Dark Mode --- */
+/* When the hidden checkbox is checked, target its sibling .page-wrapper */
+.theme-toggle-input:checked ~ .page-wrapper {
+    --bg-color: #313E51;
+    --text-color: #FFFFFF;
+    --element-bg: #3B4D66;
+    --element-shadow: 0px 16px 40px 0px rgba(0, 0, 0, .2);
+    --input-border: #626C7F;
+    --icon-bg: #626C7F;     /* Darker bg for A,B,C icons */
+    --icon-color: #FFFFFF;  /* White text for A,B,C icons */
+}
+
+/*-------------------General Page Layout Fix-------------------*/
+/* SECOND, add this rule to center your home page,
+  and update your index.html <div class="page-wrapper">
+  to <div class="page-wrapper home-page">
+*/
+.page-wrapper.home-page {
+    justify-content: center;
+}
+
+/* THIRD, add all the new styles below for the quiz page.
+*/
+
+/*-------------------Quiz Page Layout-------------------*/
+
+.page-wrapper.quiz-page {
+    justify-content: flex-start; /* Aligns quiz to the top */
+    padding-top: 3rem;
+}
+
+.quiz-container {
+    width: 100%;
+    max-width: 1100px; /* A good max width for the quiz */
+    margin: 0 auto;
+    padding: 0 1.5rem; /* Padding for mobile */
+}
+
+.quiz-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+}
+
+.quiz-main {
+    display: flex;
+    justify-content: space-between;
+    gap: 3rem;
+}
+
+.quiz-question-area {
+    flex-basis: 50%; /* Takes up half the space */
+}
+
+.quiz-options-area {
+    flex-basis: 50%; /* Takes up half the space */
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Responsive stacking for mobile */
+@media (max-width: 768px) {
+    .quiz-main {
+        flex-direction: column;
+        gap: 2rem;
+    }
+}
+
+/*-------------------Quiz Element Styles-------------------*/
+
+.subjectIcon {
+    font-family: 'Rubik', sans-serif;
+    display: flex;
+    align-items: center;
+}
+
+.subjectIcon h2 {
+    margin: 0 0 0 1rem;
+    color: var(--text-color);
+    font-size: 1.8rem;
+    font-weight: 500;
+}
+
+.boxIcon i {
+    height: 3rem;
+    width: 3rem;
+    font-size: 1.4rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; /* Prevents icon from shrinking */
+}
+
+.questionNo {
+    font-size: 1.25rem;
+    font-style: italic;
+    color: #626C7F; /* Stays grey in both modes */
+    margin-bottom: 1rem;
+}
+
+.question {
+    font-size: 2.25rem;
+    font-weight: 500;
+    color: var(--text-color);
+    line-height: 1.2;
+}
+
+.choice {
+    background-color: var(--element-bg);
+    color: var(--text-color);
+    border-radius: .75rem;
+    border: 3px solid transparent;
+    padding: 1rem;
+    box-shadow: var(--element-shadow);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    font-family: 'Rubik', sans-serif;
+    text-align: left;
+    transition: border-color 0.2s ease;
+}
+
+.choice:hover {
+    border-color: #A729F5;
+}
+
+.choice i {
+    /* Uses the new CSS variables for light/dark mode */
+    background-color: var(--icon-bg);
+    color: var(--icon-color);
+    margin-right: 1.5rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.mcq {
+    font-size: 1.2rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.submit {
+    background-color: #A729F5;
+    color: #fff;
+    border-radius: .75rem;
+    border: 0;
+    padding: 1.5rem;
+    box-shadow: 0px 16px 40px 0px rgba(143, 160, 193, .14);
+    cursor: pointer;
+    font-family: 'Rubik', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-top: 0.75rem;
+    transition: background-color 0.3s ease;
+}
+
+.submit:hover {
+    background-color: #c464ff;
+}
+
+/* Style for the selected answer */
+.choice.active {
+    border-color: #A729F5;
+}
+
+.choice.active i {
+    background-color: #A729F5 !important;
+    color: #fff !important;
+}
+
+/*-------------------Toggle Button-------------------*/
+/* (These styles are from your original file, just adapted) */
+
+.toggleMode {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    /* Positioned at the top right */
+    position: absolute;
+    top: 2rem;
+    right: 3rem;
+}
+
+@media (max-width: 600px) {
+    .toggleMode {
+        top: 1rem;
+        right: 1rem;
+    }
+}
+
+.icon {
+    font-size: 20px;
+    color: #626C7F;
+}
+
+.switch {
+    font-size: 13px;
+    position: relative;
+    display: inline-block;
+    width: 3.5em;
+    height: 2em;
+    margin: 0 0.8rem;
+}
+
+/* Hiding the input, but it's part of the label */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #A729F5;
+    border-radius: 50px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 1.4em;
+    width: 1.4em;
+    left: 0.3em;
+    bottom: 0.3em;
+    background-color: #fff;
+    border-radius: inherit;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+}
+
+/* This style is now applied by the *hidden* main checkbox */
+.theme-toggle-input:checked + .page-wrapper .slider:before {
+    transform: translateX(1.5em);
+}
