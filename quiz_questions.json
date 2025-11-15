@@ -1,4 +1,4 @@
-const quizData = {
+{
     "Html": [
         {
             "question": "What does the <label> tag do?",
