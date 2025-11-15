@@ -3,115 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz App</title>
-    <link rel="stylesheet" href="{{url_for('static',filename='css/style.css')}}">
+    <title>My App Home</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/home.css')}}">
     <script src="https://kit.fontawesome.com/acee086188.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    <div class="container">
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
 
+    <div class="page-wrapper">
+        
         <div class="toggleMode">
             <i class="fa-solid fa-sun icon"></i>
-                <label class="switch">
-                    <input type="checkbox">
-                    <span class="slider" onclick="switchMode()"></span>
-                </label>
+            <label class="switch" for="theme-toggle">
+                <span class="slider"></span>
+            </label>
             <i class="fa-solid fa-moon icon"></i>
         </div>
 
-        <div class="main">
-            
-            <div class="left mainLeft">
-                <h1>Welcome to the <br><span>Quiz App!</span></h1>
-                <p><i>Pick a subject to get started.</i></p>
+        <div class="hero-container">
+            <div class="hero-section">
+                <h1>Welcome to the <br><span>New App!</span></h1>
+                <p><i>Type your prompt below to get started.</i></p>
             </div>
-
-            <div class="right subjects">
-                <button type="button" class="choice boxIcon">
-                    <i class="fa-solid fa-code"
-                    style="background-color: #FFF1E9; color: orange;"></i>
-                    <p class="subject">Html</p>
+            <form class="prompt-area" action="" method="post">
+                <input type="text" class="prompt-input" placeholder="Type your prompt here...">
+                <button type="submit" class="prompt-send">
+                    <i class="fa-solid fa-paper-plane"></i>
                 </button>
-                <button type="button" class="choice boxIcon">
-                    <i class="fa-solid fa-brush"
-                    style="background-color: #E0FDEF; color: green;"></i>
-                    <p class="subject">Css</p>
-                </button>
-                <button type="button" class="choice boxIcon">
-                    <i class="fa-brands fa-js"
-                    style="background-color: #EBF0FF; color: blue;"></i>
-                    <p class="subject">Js</p>
-                </button>
-                <button type="button" class="choice boxIcon">
-                    <i class="fa-solid fa-person"
-                    style="background-color: #F6E7FF; color: purple;"></i>
-                    <p class="subject">Accessibility</p>
-                </button>
-            </div>
-
-        </div>
-    </div>
-
-    <div class="questionPage">
-        <div class="header">
-            <div class="subjectIcon boxIcon">
-                <i class="fa-solid fa-code"
-                    style="background-color: #FFF1E9; color: orange;"></i>
-                <h2>Html</h2>
-            </div>
-            <div class="toggleMode">
-                <i class="fa-solid fa-sun icon"></i>
-                    <label class="switch">
-                        <input type="checkbox" onclick="switchMode()">
-                        <span class="slider"></span>
-                    </label>
-                <i class="fa-solid fa-moon icon"></i>
-            </div>
-        </div>
-
-        <div>
-            <div>
-                <p class="questionNo"><i>Question 1 of 10</i></p>
-                <h1 class="question">What does HTML stand for?</h1>
-            </div>
-            <form class="right options" style="width: 70%;">
-                <button type="button" class="choice boxIcon">
-                    <i class="fa-solid fa-a"
-                    style="background-color: #F4F6FA; color: #626C7F;"></i>
-                    <p class="mcq option-1">Hyper Trainer Marking Language</p>
-                </button>
-                <button type="button" class="choice boxIcon">
-                    <i class="fa-solid fa-b"
-                    style="background-color: #F4F6FA; color: #626C7F;"></i>
-                    <p class="mcq option-2">Hyper Text Marketing Language</p>
-                </button>
-                <button type="button" class="choice boxIcon">
-                    <i class="fa-solid fa-c"
-                    style="background-color: #F4F6FA; color: #626C7F;"></i>
-                    <p class="mcq option-3">Hyper Text Markup Language</p>
-                </button>
-                <button type="button" class="choice boxIcon">
-                    <i class="fa-solid fa-d"
-                    style="background-color: #F4F6FA; color: #626C7F;"></i>
-                    <p class="mcq option-4">Hyper Text Markup Leveler</p>
-                </button>
-                <button type="submit" class="submit">Submit</button>
             </form>
         </div>
 
-
     </div>
-    <div class="ScoreBoard">
-        <div class="score-card">
-            <h1 class="score-title">Quiz Complete!</h1>
-            <p class="score-label">Your Score</p>
-                <div class="score-value">
-                8 <span>/ 10</span>
-            </div>
-            <button class="submit" onclick="restart()">Try Again</button>
-        </div>
-    </div>
-    <script src="quiz_questions.js"></script>
-    <script src="app.js"></script>
 </body>
 </html>
