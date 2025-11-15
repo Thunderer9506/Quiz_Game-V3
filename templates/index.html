@@ -11,7 +11,7 @@
     <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
 
     <div class="page-wrapper">
-        
+
         <div class="toggleMode">
             <i class="fa-solid fa-sun icon"></i>
             <label class="switch" for="theme-toggle">
@@ -25,8 +25,8 @@
                 <h1>Welcome to the <br><span>New App!</span></h1>
                 <p><i>Type your prompt below to get started.</i></p>
             </div>
-            <form class="prompt-area" action="" method="post">
-                <input type="text" class="prompt-input" placeholder="Type your prompt here...">
+            <form class="prompt-area" action="{{url_for('home')}}" method="post">
+                <input name="prompt" type="text" class="prompt-input" placeholder="Type your prompt here...">
                 <button type="submit" class="prompt-send">
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>
