@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz App - Question</title>
+    <link
+      rel="stylesheet"
+      href="{{url_for('static',filename='css/quiz.css')}}"
+    />
+    <script
+      src="https://kit.fontawesome.com/acee086188.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input" />
+
+    <div class="page-wrapper quiz-page">
+      <div class="quiz-container">
+        <div class="quiz-header">
+          <div class="subjectIcon boxIcon">
+            <i
+              class="fa-solid fa-code"
+              style="background-color: #fff1e9; color: orange"
+            ></i>
+            <h2>Html</h2>
+          </div>
+
+          <div class="toggleMode">
+            <i class="fa-solid fa-sun icon"></i>
+            <label class="switch" for="theme-toggle">
+              <span class="slider"></span>
+            </label>
+            <i class="fa-solid fa-moon icon"></i>
+          </div>
+        </div>
+
+        <div class="quiz-main">
+          <div class="quiz-question-area">
+            <p class="questionNo"><i>Question 1 of 10</i></p>
+            <h1 class="question">What does HTML stand for?</h1>
+          </div>
+            
+          <form class="quiz-options-area">
+            <button type="button" class="choice boxIcon">
+              <i class="fa-solid fa-a"></i>
+              <p class="mcq">Hyper Trainer Marking Language</p>
+            </button>
+            <button type="button" class="choice boxIcon">
+              <i class="fa-solid fa-b"></i>
+              <p class="mcq">Hyper Text Marketing Language</p>
+            </button>
+            <button type="button" class="choice boxIcon">
+              <i class="fa-solid fa-c"></i>
+              <p class="mcq">Hyper Text Markup Language</p>
+            </button>
+            <button type="button" class="choice boxIcon">
+              <i class="fa-solid fa-d"></i>
+              <p class="mcq">Hyper Text Markup Leveler</p>
+            </button>
+
+            <button type="submit" class="submit">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script src="{{url_for('static',filename='js/quiz.js')}}"></script>
+</html>
