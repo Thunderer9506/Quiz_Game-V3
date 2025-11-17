@@ -1,61 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+/* This file only has styles for the home page layout */
 
-/*-------------------Base & Dark Mode Setup-------------------*/
-
-body {
-    padding: 0;
-    margin: 0;
-    font-family: 'Rubik', sans-serif;
-    /* Light Mode (default) */
-    background-color: #F4F6FA; /* Using a light grey from original for bg */
-    color: #313E51;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Hide the theme-toggle checkbox */
-.theme-toggle-input {
-    display: none;
-}
-
-/* This .page-wrapper holds all content */
-.page-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 2rem;
-    box-sizing: border-box; /* Ensures padding doesn't break layout */
-    
-    /* These variables will be updated for dark mode */
-    --bg-color: #F4F6FA;
-    --text-color: #313E51;
-    --element-bg: #FFFFFF;
-    --element-shadow: 0px 16px 40px 0px rgba(143, 160, 193, .14);
-    --input-border: #DDE2E8;
-
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* --- Dark Mode --- */
-/* When the hidden checkbox is checked, target its sibling .page-wrapper */
-.theme-toggle-input:checked ~ .page-wrapper {
-    --bg-color: #313E51;
-    --text-color: #FFFFFF;
-    --element-bg: #3B4D66;
-    --element-shadow: 0px 16px 40px 0px rgba(0, 0, 0, .2);
-    --input-border: #626C7F;
-}
-
-/*-------------------Hero & Prompt Styles-------------------*/
-
-/*-------------------Main Layout (Old Design)-------------------*/
 .page-wrapper.home-page {
     display: flex;
     align-items: center; /* Vertically centers the content */
     justify-content: center;
+    padding: 2rem;
 }
 
 .main-container {
@@ -104,10 +53,7 @@ body {
         flex-direction: column;
         text-align: center;
     }
-    .left {
-        width: 100%;
-    }
-    .right {
+    .left, .right {
         width: 100%;
     }
     .left h1 {
@@ -115,8 +61,7 @@ body {
     }
 }
 
-
-/*-------------------New Settings Form-------------------*/
+/*-------------------Settings Form-------------------*/
 .right.settings form {
     display: flex;
     flex-direction: column;
@@ -136,7 +81,6 @@ body {
     font-weight: 500;
     padding: 1.25rem 1rem;
     
-    /* These variables make the theme-switching work! */
     background-color: var(--element-bg);
     color: var(--text-color);
     border: 2px solid var(--input-border);
@@ -145,11 +89,9 @@ body {
     box-shadow: var(--element-shadow);
     cursor: pointer;
     
-    /* Removes default OS appearance */
     appearance: none;
     -webkit-appearance: none;
     
-    /* Adds a custom dropdown arrow */
     background-image: url("data:image/svg+xml;charset=UTF8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23A729F5'%3E%3Cpath fill-rule='evenodd' d='M8 11.293l-5.146-5.147a.5.5 0 0 1 .708-.708L8 10.293l4.438-4.438a.5.5 0 1 1 .708.708L8 11.293z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 1.25rem center;
@@ -161,89 +103,4 @@ body {
     border-color: #A729F5;
 }
 
-/* We reuse the .submit style from the quiz page */
-.submit {
-    background-color: #A729F5;
-    color: #fff;
-    border-radius: .75rem;
-    border: 0;
-    padding: 1.25rem;
-    box-shadow: 0px 16px 40px 0px rgba(143, 160, 193, .14);
-    cursor: pointer;
-    font-family: 'Rubik', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 500;
-    margin-top: 1rem;
-    transition: background-color 0.3s ease;
-}
-
-.submit:hover {
-    background-color: #c464ff;
-}
-
-/*-------------------Toggle Button-------------------*/
-/* (These styles are from your original file, just adapted) */
-
-.toggleMode {
-    display: flex;
-    align-items: center;
-    justify-content: end;
-    /* Positioned at the top right */
-    position: absolute;
-    top: 2rem;
-    right: 3rem;
-}
-
-@media (max-width: 600px) {
-    .toggleMode {
-        top: 1rem;
-        right: 1rem;
-    }
-}
-
-.icon {
-    font-size: 20px;
-    color: #626C7F;
-}
-
-.switch {
-    font-size: 13px;
-    position: relative;
-    display: inline-block;
-    width: 3.5em;
-    height: 2em;
-    margin: 0 0.8rem;
-}
-
-/* Hiding the input, but it's part of the label */
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    inset: 0;
-    background-color: #A729F5;
-    border-radius: 50px;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 1.4em;
-    width: 1.4em;
-    left: 0.3em;
-    bottom: 0.3em;
-    background-color: #fff;
-    border-radius: inherit;
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
-}
-
-/* This style is now applied by the *hidden* main checkbox */
-.theme-toggle-input:checked + .page-wrapper .slider:before {
-    transform: translateX(1.5em);
-}
+/* The .submit style is now in base.css! */
