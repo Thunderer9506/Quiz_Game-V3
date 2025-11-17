@@ -26,7 +26,8 @@ def getQuestion(category="any", difficulty="any", type="any"):
             "id": id,
             "question": html.unescape(i['question']),
             "options": options,
-            "correct": html.unescape(i['correct_answer'])
+            "correct": html.unescape(i['correct_answer']),
+            "category": i['category']
         })
         id += 1
 
