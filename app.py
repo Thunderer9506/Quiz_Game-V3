@@ -41,7 +41,7 @@ def home():
 def quiz(questionId):
     # What if the user bookmarked this page, questions wont be present
     # in session giving us errors
-    if 'questions' not in session:
+    if 'questions' not in session or not session['questions']:
         return redirect(url_for('home'))
     
     all_questions = session.get('questions',[])
