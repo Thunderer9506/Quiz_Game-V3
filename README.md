@@ -61,7 +61,7 @@ To run this project on your local machine, follow these steps.
 
 1.  **Clone the repository:**
     ```sh
-    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
+    git clone [https://github.com/Thunderer9506/Quiz_Game-V3](https://github.com/Thunderer9506/Quiz_Game-V3)
     cd your-repo-name
     ```
 
