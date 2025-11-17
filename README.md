@@ -6,7 +6,7 @@ The project features a clean, modern, and responsive UI with a CSS-only light/da
 
 ### Demo Link
 
-**[View Live Demo](https://your-live-demo-link.com)**
+**[View Live Demo](https://quiz-game-v3.onrender.com/)**
 
 ---
 
