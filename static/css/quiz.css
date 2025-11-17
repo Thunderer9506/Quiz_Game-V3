@@ -137,26 +137,12 @@ body {
     flex-shrink: 0; /* Prevents icon from shrinking */
 }
 
-.questionNo {
-    font-size: 1.25rem;
-    font-style: italic;
-    color: #626C7F; /* Stays grey in both modes */
-    margin-bottom: 1rem;
-}
 
-.question {
-    font-size: 2.25rem;
-    font-weight: 500;
-    color: var(--text-color);
-    line-height: 1.2;
-}
 
 .choice {
     background-color: var(--element-bg);
     color: var(--text-color);
     border-radius: .75rem;
-    border: 3px solid transparent;
-    padding: 1rem;
     box-shadow: var(--element-shadow);
     cursor: pointer;
     display: flex;
@@ -167,12 +153,8 @@ body {
     transition: border-color 0.2s ease;
 }
 
-.choice:hover {
-    border-color: #A729F5;
-}
-
 .choice i {
-    /* Uses the new CSS variables for light/dark mode */
+    
     background-color: var(--icon-bg);
     color: var(--icon-color);
     margin-right: 1.5rem;
@@ -204,12 +186,36 @@ body {
     background-color: #c464ff;
 }
 
-/* Style for the selected answer */
-.choice.active {
+/* Hides the actual radio button circle */
+.radio-input {
+    display: none;
+}
+
+/* This is the wrapper for our content */
+.choice-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    border: 3px solid transparent; /* Start with transparent border */
+    border-radius: .75rem; /* Match the label's rounding */
+    padding: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+/* When the label is hovered, style the content */
+label.choice:hover .choice-content {
     border-color: #A729F5;
 }
 
-.choice.active i {
+/* --- THIS IS THE MAGIC --- */
+
+/* When the radio is checked, style the .choice-content */
+.radio-input:checked + .choice-content {
+    border-color: #A729F5;
+}
+
+/* When the radio is checked, style the icon inside */
+.radio-input:checked + .choice-content i {
     background-color: #A729F5 !important;
     color: #fff !important;
 }

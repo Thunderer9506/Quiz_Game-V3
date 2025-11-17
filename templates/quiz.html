@@ -38,33 +38,33 @@
 
         <div class="quiz-main">
           <div class="quiz-question-area">
-            <p class="questionNo"><i>Question 1 of 10</i></p>
-            <h1 class="question">What does HTML stand for?</h1>
+            <p class="questionNo"><i>Question {{questions['id']}} of 10</i></p>
+            <h1 class="question">{{questions['question']}}</h1>
           </div>
             
-          <form class="quiz-options-area">
-            <button type="button" class="choice boxIcon">
-              <i class="fa-solid fa-a"></i>
-              <p class="mcq">Hyper Trainer Marking Language</p>
-            </button>
-            <button type="button" class="choice boxIcon">
-              <i class="fa-solid fa-b"></i>
-              <p class="mcq">Hyper Text Marketing Language</p>
-            </button>
-            <button type="button" class="choice boxIcon">
-              <i class="fa-solid fa-c"></i>
-              <p class="mcq">Hyper Text Markup Language</p>
-            </button>
-            <button type="button" class="choice boxIcon">
-              <i class="fa-solid fa-d"></i>
-              <p class="mcq">Hyper Text Markup Leveler</p>
-            </button>
-
+          <form class="quiz-options-area" action="{{url_for('quiz',questionId=questions['id'])}}" method="post">
+            {% for item in questions['options'] %}
+              <label class="choice boxIcon">
+                  <input type="radio" name="answer" value="{{loop.index}}" class="radio-input">
+                  <span class="choice-content">
+                      
+                      {% if loop.index == 1 %}
+                        <i class="fa-solid fa-a"></i>
+                      {% elif loop.index == 2 %}
+                        <i class="fa-solid fa-b"></i>
+                      {% elif loop.index == 3 %}
+                        <i class="fa-solid fa-c"></i>
+                      {% else %}
+                        <i class="fa-solid fa-d"></i>
+                      {% endif %}
+                      <p class="mcq">{{item}}</p>
+                  </span>
+              </label>
+            {% endfor %}
             <button type="submit" class="submit">Submit</button>
           </form>
         </div>
       </div>
     </div>
   </body>
-  <script src="{{url_for('static',filename='js/quiz.js')}}"></script>
 </html>
