@@ -24,7 +24,7 @@
               class="fa-solid fa-code"
               style="background-color: #fff1e9; color: orange"
             ></i>
-            <h2>Html</h2>
+            <h2>{{question['category']}}</h2>
           </div>
 
           <div class="toggleMode">
@@ -38,7 +38,7 @@
 
         <div class="quiz-main">
           <div class="quiz-question-area">
-            <p class="questionNo"><i>Question {{questions['id']}} of 10</i></p>
+            <p class="questionNo"><i>Question {{questions['id']}} of {{total_questions}}</i></p>
             <h1 class="question">{{questions['question']}}</h1>
           </div>
             
