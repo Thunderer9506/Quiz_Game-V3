@@ -30,13 +30,13 @@
         <p class="score-label">Your Score</p>
       
         <div class="score-value">
-          {{ result['score'] }} <span>/ {{ result['total'] }}</span>
+          {{ score }} <span>/ {{ total }}</span>
         </div>
-        {% if result['score'] <= 3 %}
+        {% if score <= 3 %}
           <p>Good Luck next time</p>
-        {% elif result['score'] > 3 and  result['score'] < 7%}
+        {% elif score > 3 and  score < 7%}
           <p>Can Do better</p>
-        {% elif result['score'] >=7 and  result['score'] < 10%}
+        {% elif score >=7 and  score < 10%}
           <p>DAMN!!!</p>
         {% endif %}
 
