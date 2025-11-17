@@ -1,12 +1,33 @@
 import requests
+import random
+import html
 
-
-def getQuestion(category = None,difficulty=None, type= None):
-    result = requests.get("https://opentdb.com/api.php?amount=10&category=11&difficulty=easy&type=multiple")
+def getQuestion(category="any", difficulty="any", type="any"):
+    api_link = "https://opentdb.com/api.php?amount=10"
     params = ""
-    if category:
-        params += "&category="+category
-    if difficulty:
-        params += "&difficulty="+difficulty
-    if type:
-        params += "&type="+type
+    if category != 'any':
+        params += "&category=" + category
+    if difficulty != 'any':
+        params += "&difficulty=" + difficulty
+    if type != 'any':
+        params += "&type=" + type
+    
+    api_link += params
+    results = requests.get(api_link).json()
+    questions = []
+
+    id = 1
+    for i in results['results']:
+        options = [html.unescape(opt) for opt in i['incorrect_answers']]
+        options.append(html.unescape(i['correct_answer']))
+        random.shuffle(options)
+
+        questions.append({
+            "id": id,
+            "question": html.unescape(i['question']),
+            "options": options,
+            "correct": html.unescape(i['correct_answer'])
+        })
+        id += 1
+
+    return questions
