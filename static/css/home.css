@@ -51,102 +51,134 @@ body {
 
 /*-------------------Hero & Prompt Styles-------------------*/
 
-.hero-container {
+/*-------------------Main Layout (Old Design)-------------------*/
+.page-wrapper.home-page {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    align-items: center; /* Vertically centers the content */
     justify-content: center;
-    width: 100%;
-    max-width: 600px; /* Max width for readability */
-    text-align: center;
 }
 
-.hero-section h1 {
-    font-size: 3.5rem; /* Slightly adjusted for balance */
+.main-container {
+    width: 70vw;
+    max-width: 1100px;
+    margin: auto;
+}
+
+.main {
+    display: flex;
+    align-items: center;
+    gap: 5rem;
+    width: 100%;
+}
+
+.left {
+    flex-basis: 50%;
+}
+
+.right {
+    flex-basis: 50%;
+}
+
+.left h1 {
+    font-size: 4rem;
     font-weight: 300;
     margin-top: 0;
     margin-bottom: 1rem;
     color: var(--text-color);
 }
 
-.hero-section h1 span {
+.left h1 span {
     font-weight: 500;
 }
 
-.hero-section p {
+.left p {
     font-size: 1.25rem;
     font-style: italic;
-    color: #626C7F; /* Keeping this grey for subtext */
+    color: #626C7F;
     margin-bottom: 2rem;
 }
 
-/* Responsive font size for H1 */
-@media (max-width: 600px) {
-    .hero-section h1 {
-        font-size: 2.5rem;
+/* Responsive stack for layout */
+@media (max-width: 900px) {
+    .main {
+        flex-direction: column;
+        text-align: center;
     }
-    .hero-section p {
-        font-size: 1rem;
+    .left {
+        width: 100%;
+    }
+    .right {
+        width: 100%;
+    }
+    .left h1 {
+        font-size: 3rem;
     }
 }
 
-.prompt-area {
+
+/*-------------------New Settings Form-------------------*/
+.right.settings form {
     display: flex;
-    width: 100%;
-    background-color: var(--element-bg);
-    border-radius: 1rem; /* Consistent with your buttons */
-    box-shadow: var(--element-shadow);
-    border: 3px solid transparent; /* For focus */
-    transition: border 0.3s ease;
+    flex-direction: column;
+    gap: 1rem;
 }
 
-.prompt-area:focus-within {
-    border-color: #A729F5; /* Purple accent on focus */
-}
-
-.prompt-input {
-    flex-grow: 1; /* Takes up available space */
-    font-family: 'Rubik', sans-serif;
-    font-size: 1rem;
-    padding: 1.5rem;
-    border: none;
-    background-color: transparent;
+.right.settings label {
+    font-size: 1.1rem;
+    font-weight: 500;
     color: var(--text-color);
-    border-radius: 1rem 0 0 1rem;
+    margin-bottom: -0.5rem; /* Moves label closer to its select */
+}
+
+.custom-select {
+    font-family: 'Rubik', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 1.25rem 1rem;
+    
+    /* These variables make the theme-switching work! */
+    background-color: var(--element-bg);
+    color: var(--text-color);
+    border: 2px solid var(--input-border);
+    
+    border-radius: .75rem;
+    box-shadow: var(--element-shadow);
+    cursor: pointer;
+    
+    /* Removes default OS appearance */
+    appearance: none;
+    -webkit-appearance: none;
+    
+    /* Adds a custom dropdown arrow */
+    background-image: url("data:image/svg+xml;charset=UTF8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23A729F5'%3E%3Cpath fill-rule='evenodd' d='M8 11.293l-5.146-5.147a.5.5 0 0 1 .708-.708L8 10.293l4.438-4.438a.5.5 0 1 1 .708.708L8 11.293z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1.25rem center;
+    background-size: 1em 1em;
+}
+
+.custom-select:focus {
     outline: none;
+    border-color: #A729F5;
 }
 
-.prompt-input::placeholder {
-    color: #626C7F;
-}
-
-.prompt-send {
-    background-color: #A729F5; /* Purple accent */
+/* We reuse the .submit style from the quiz page */
+.submit {
+    background-color: #A729F5;
     color: #fff;
-    border: none;
-    border-radius: 0 0.8rem 0.8rem 0; /* Rounded on the right */
-    padding: 1.5rem;
+    border-radius: .75rem;
+    border: 0;
+    padding: 1.25rem;
+    box-shadow: 0px 16px 40px 0px rgba(143, 160, 193, .14);
     cursor: pointer;
-    font-size: 1.25rem;
-    line-height: 1; /* Aligns icon nicely */
-    transition: background-color 0.3s ease;
-}
-
-.prompt-send:hover {
-    background-color: #c464ff; /* Lighter purple on hover */
-}
-
-.test-button{
-    background-color: #A729F5; /* Purple accent */
-    color: #fff;
-    border: none;
-    border-radius: 1rem;
-    padding: 1rem;
+    font-family: 'Rubik', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 500;
     margin-top: 1rem;
-    cursor: pointer;
-    font-size: 1.25rem;
-    line-height: 1; /* Aligns icon nicely */
     transition: background-color 0.3s ease;
+}
+
+.submit:hover {
+    background-color: #c464ff;
 }
 
 /*-------------------Toggle Button-------------------*/
