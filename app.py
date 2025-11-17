@@ -1,5 +1,6 @@
-from flask import Flask,render_template,request,redirect,url_for
+from flask import Flask,render_template,request,redirect,url_for,session
 from generateQuestion import getQuestion
+import secrets
 
 CATEGORY = ["General Knowledge","Entertainment: Books",
             "Entertainment: Film","Entertainment: Music",
@@ -13,9 +14,8 @@ CATEGORY = ["General Knowledge","Entertainment: Books",
 
 
 app = Flask(__name__)
+app.secret_key = secrets.token_urlsafe(32)
 
-QUESTION = None
-SCORE = 0
 
 @app.context_processor
 def inject_global_vars():
@@ -23,35 +23,48 @@ def inject_global_vars():
 
 @app.route("/",methods=['GET','POST'])
 def home():
-    global QUESTION, SCORE
-    SCORE = 0
+    session.clear()
+
     if request.method == 'POST':
         category = request.form.get('category')
-        type = request.form.get('type')
+        type_ = request.form.get('type')
         difficulty = request.form.get('difficulty')
-        QUESTION = getQuestion(category,difficulty,type)
+
+        session['questions'] = getQuestion(category,difficulty,type_)
+        session['score'] = 0
+
         return redirect(url_for('quiz',questionId = 1))
         
     return render_template("index.html")
 
 @app.route("/questionPage/<int:questionId>",methods=['GET','POST'])
 def quiz(questionId):
-    global SCORE
-    if questionId >= 10:
+    # What if the user bookmarked this page, questions wont be present
+    # in session giving us errors
+    if 'questions' not in session:
+        return redirect(url_for('home'))
+    
+    all_questions = session.get('questions',[])
+    
+    if questionId >= len(all_questions):
         return redirect(url_for('score'))
-    questions = QUESTION[questionId-1]
-    print(questions)
+    
+    current_questions = all_questions[questionId-1]
+
     if request.method == 'POST':
         answer = request.form.get('answer')
-        print(answer)
-        if questions['correct'] == questions['options'][int(answer)-1]:
-            SCORE += 1
+        if answer:
+            choosen_option_text = current_questions['options'][int(answer)-1]
+            if current_questions['correct'] == choosen_option_text:
+                session['score'] = session.get('score',0)+1
+
         return redirect(url_for('quiz',questionId = questionId + 1))
-    return render_template("quiz.html",questions = questions)
+    return render_template("quiz.html",questions = current_questions,total_questions = len(all_questions))
 
 @app.route("/score")
 def score():
-    return render_template("score.html",result = {'score':SCORE,'total':10})
+    return render_template("score.html",score = session.get('score'),
+                                        total = len(session.get('questions',[])))
 
 if __name__ == "__main__":
     app.run(debug=True)
