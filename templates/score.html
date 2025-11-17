@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz App - Your Score</title>
+    <link
+      rel="stylesheet"
+      href="{{url_for('static',filename='css/score.css')}}"
+    />
+    <script
+      src="https://kit.fontawesome.com/acee086188.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input" />
+
+    <div class="page-wrapper score-page">
+      <div class="toggleMode">
+        <i class="fa-solid fa-sun icon"></i>
+        <label class="switch" for="theme-toggle">
+          <span class="slider"></span>
+        </label>
+        <i class="fa-solid fa-moon icon"></i>
+      </div>
+
+      <div class="score-card">
+        <h1>Quiz Complete!</h1>
+        <p class="score-label">Your Score</p>
+      
+        <div class="score-value">
+          {{ result['score'] }} <span>/ {{ result['total'] }}</span>
+        </div>
+        {% if result['score'] <= 3 %}
+          <p>Good Luck next time</p>
+        {% elif result['score'] > 3 and  result['score'] < 7%}
+          <p>Can Do better</p>
+        {% elif result['score'] >=7 and  result['score'] < 10%}
+          <p>DAMN!!!</p>
+        {% endif %}
+
+        <form
+          action="{{ url_for('home') }}"
+          method="GET"
+          class="play-again-form"
+        >
+          <button type="submit" class="submit">Play Again</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
