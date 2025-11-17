@@ -6,7 +6,7 @@ The project features a clean, modern, and responsive UI with a CSS-only light/da
 
 ### Demo Link
 
-**[View Live Demo](https://your-live-demo-link.com)**
+**[View Live Demo](https://quiz-game-v3.onrender.com/)**
 
 ---
 
@@ -61,7 +61,7 @@ To run this project on your local machine, follow these steps.
 
 1.  **Clone the repository:**
     ```sh
-    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
+    git clone [https://github.com/Thunderer9506/Quiz_Game-V3](https://github.com/Thunderer9506/Quiz_Game-V3)
     cd your-repo-name
     ```
 
