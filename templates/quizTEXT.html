@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz App - Question (Text)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/quizTEXT.css') }}" />
+    <script
+      src="https://kit.fontawesome.com/acee086188.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input" />
+
+    <div class="page-wrapper quiz-page">
+      <div class="quiz-container">
+        <div class="quiz-header">
+          <div class="subjectIcon boxIcon">
+            <i
+              class="fa-solid fa-pen"
+              style="background-color: #e9f5ff; color: #0077ff"
+            ></i>
+            <h2>{{ questions['category'] }}</h2>
+          </div>
+
+          <div class="toggleMode">
+            <i class="fa-solid fa-sun icon"></i>
+            <label class="switch" for="theme-toggle">
+              <span class="slider"></span>
+            </label>
+            <i class="fa-solid fa-moon icon"></i>
+          </div>
+        </div>
+
+        <div class="quiz-main">
+          <div class="quiz-question-area">
+            <p class="questionNo">
+              <i>Question {{ questions['id'] }} of {{ total_questions }}</i>
+            </p>
+            <h1 class="question">{{ questions['question'] }}</h1>
+          </div>
+
+          <form
+            class="quiz-text-area"
+            action="{{ url_for('quiz', questionId=questions['id']) }}"
+            method="post"
+          >
+            <label class="text-answer-label" for="answer">
+              Your Answer
+            </label>
+            <textarea
+              id="answer"
+              name="answer"
+              rows="6"
+              placeholder="Type your answer here..."
+              required
+            ></textarea>
+            <button type="submit" class="submit">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
