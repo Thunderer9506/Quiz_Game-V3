@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiz App - AI Evaluation</title>
     <link rel="stylesheet" href="{{url_for('static',filename='css/base.css')}}">
-    <link rel="stylesheet" href="{{url_for('static',filename='css/score.css')}}" />
+    <link rel="stylesheet" href="{{url_for('static',filename='css/evaluation.css')}}" />
     <script src="https://kit.fontawesome.com/acee086188.js" crossorigin="anonymous"></script>
   </head>
   <body>
@@ -51,66 +51,39 @@
             <div class="stat-card">
               <h3>By Category</h3>
               
+              {% for category, scores in performance['category'].items() %}
               <div class="stat-item">
-                <span class="stat-label">General</span>
+                <span class="stat-label">{{ category }}</span>
                 <div class="stat-bar">
-                  <div class="stat-fill" style="width: 100%"></div>
+                  {% set category_correct = scores|select("equalto", 1)|list|length %}
+                  {% if (scores|length) != 0 %}
+                    <div class="stat-fill" style="width: {{ (category_correct / (scores|length)) * 100 }}%"></div>
+                  {% else %}
+                    <div class="stat-fill" style="width: 0%"></div>
+                  {% endif %}
                 </div>
-                <span class="stat-value">1/1</span>
+                <span class="stat-value">{{ category_correct }}/{{ scores|length }}</span>
               </div>
-              
-              <div class="stat-item">
-                <span class="stat-label">Science</span>
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: 100%"></div>
-                </div>
-                <span class="stat-value">1/1</span>
-              </div>
-              
-              <div class="stat-item">
-                <span class="stat-label">Math</span>
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: 0%"></div>
-                </div>
-                <span class="stat-value">0/1</span>
-              </div>
-              
-              <div class="stat-item">
-                <span class="stat-label">History</span>
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: 100%"></div>
-                </div>
-                <span class="stat-value">1/1</span>
-              </div>
-              
-              <div class="stat-item">
-                <span class="stat-label">Technology</span>
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: 0%"></div>
-                </div>
-                <span class="stat-value">0/1</span>
-              </div>
+              {% endfor %}
             </div>
 
             <!-- Difficulty Performance -->
             <div class="stat-card">
               <h3>By Difficulty</h3>
-              
+              {% for difficulty, scores in performance['difficulty'].items() %}
               <div class="stat-item">
-                <span class="stat-label">Easy</span>
+                <span class="stat-label">{{ difficulty }}</span>
                 <div class="stat-bar">
-                  <div class="stat-fill" style="width: 100%"></div>
+                  {% set difficulty_correct = scores|select("equalto", 1)|list|length %}
+                  {% if (scores|length) != 0 %}
+                    <div class="stat-fill" style="width: {{ (difficulty_correct / (scores|length)) * 100 }}%"></div>
+                  {% else %}
+                    <div class="stat-fill" style="width: 0%"></div>
+                  {% endif %}
                 </div>
-                <span class="stat-value">3/3</span>
+                <span class="stat-value">{{ difficulty_correct }}/{{ scores|length }}</span>
               </div>
-              
-              <div class="stat-item">
-                <span class="stat-label">Medium</span>
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: 0%"></div>
-                </div>
-                <span class="stat-value">0/2</span>
-              </div>
+              {% endfor %}
             </div>
           </div>
         </div>

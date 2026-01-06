@@ -71,16 +71,39 @@ STATIC_QUESTIONS = [
     },
 ]
 
+def initialize_performance_metrics():
+    return {
+    "category": {},
+    "difficulty": {
+        'easy': [],
+        'medium': [],
+        'hard': []
+    }
+}
+
+def update_performance_metrics(category, difficulty, score):
+    if category not in session['performance_metrics']['category']:
+        session['performance_metrics']['category'][category] = [score]
+    else:
+        session['performance_metrics']['category'][category].append(score)
+
+    session['performance_metrics']['difficulty'][difficulty].append(score)
+
+def clear_performance_metrics():
+    if 'performance_metrics' in session:
+        session.pop('performance_metrics')
 
 
 @app.route("/",methods=['GET','POST'])
 def home():
     session.clear()
+    clear_performance_metrics()
 
     if request.method == 'POST':
         # input = request.form.get('prompt')
         session['score'] = 0
         session['questions'] = STATIC_QUESTIONS
+        session['performance_metrics'] = initialize_performance_metrics()
         return redirect(url_for('quiz',questionId = 1))
         
     return render_template("index.html")
@@ -107,11 +130,16 @@ def quiz(questionId):
                 choosen_option_text = current_questions['options'][int(answer)-1]
                 if current_questions['correct'] == choosen_option_text:
                     session['score'] = session.get('score',0)+1
+                    update_performance_metrics(current_questions['category'], current_questions['difficulty'], 1)
+                else:
+                    update_performance_metrics(current_questions['category'], current_questions['difficulty'], 0)
         else:
             # For text questions, just store the raw answer for now
             text_answers = session.get('text_answers', {})
             text_answers[str(questionId)] = answer
             session['text_answers'] = text_answers
+            # Mark text questions as 0 for now (needs manual evaluation)
+            update_performance_metrics(current_questions['category'], current_questions['difficulty'], 0)
 
         return redirect(url_for('quiz',questionId = questionId + 1))
 
@@ -120,8 +148,9 @@ def quiz(questionId):
 
 @app.route("/score")
 def score():
-    return render_template("score.html",score = session.get('score'),
-                                        total = len(session.get('questions',[])))
+    return render_template("evaluation.html",score = session.get('score'),
+                                        total = len(session.get('questions',[])),
+                                        performance = session.get('performance_metrics', {}))
 
 if __name__ == "__main__":
     app.run(debug=True,host='0.0.0.0')
