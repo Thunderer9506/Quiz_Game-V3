@@ -2,7 +2,7 @@ import requests
 import random
 import html
 
-def getQuestion(category="any", difficulty="any", type="any"):
+def getQuestion(category:str ="any", difficulty:str="any", type:str="any") -> list:
     api_link = "https://opentdb.com/api.php?amount=10"
     params = ""
     if category != 'any':
