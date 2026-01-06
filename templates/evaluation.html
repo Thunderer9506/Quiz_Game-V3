@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz App - AI Evaluation</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/base.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename='css/score.css')}}" />
+    <script src="https://kit.fontawesome.com/acee086188.js" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input" />
+
+    <div class="page-wrapper evaluation-page">
+      <div class="toggleMode">
+        <i class="fa-solid fa-sun icon"></i>
+        <label class="switch" for="theme-toggle">
+          <span class="slider"></span>
+        </label>
+        <i class="fa-solid fa-moon icon"></i>
+      </div>
+
+      <div class="evaluation-container">
+        <!-- Overall Score Section -->
+        <div class="score-overview">
+          <h1>Quiz Complete!</h1>
+          <div class="main-score">
+            <span class="score-number">{{ score }}</span>
+            <span class="score-total">/ {{ total }}</span>
+          </div>
+          <div class="performance-message">
+            {% set score_percentage = (score / total * 100) if total > 0 else 0 %}
+            {% if score_percentage >= 80 %}
+              <p class="excellent">Excellent Performance! 🎉</p>
+            {% elif score_percentage >= 60 %}
+              <p class="good">Good Job! 👍</p>
+            {% elif score_percentage >= 40 %}
+              <p class="average">Room for Improvement 📈</p>
+            {% else %}
+              <p class="needs-work">Keep Practicing! 💪</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="stats-section">
+          <h2>Performance Statistics</h2>
+          
+          <div class="stats-grid">
+            <!-- Category Performance -->
+            <div class="stat-card">
+              <h3>By Category</h3>
+              
+              <div class="stat-item">
+                <span class="stat-label">General</span>
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: 100%"></div>
+                </div>
+                <span class="stat-value">1/1</span>
+              </div>
+              
+              <div class="stat-item">
+                <span class="stat-label">Science</span>
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: 100%"></div>
+                </div>
+                <span class="stat-value">1/1</span>
+              </div>
+              
+              <div class="stat-item">
+                <span class="stat-label">Math</span>
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: 0%"></div>
+                </div>
+                <span class="stat-value">0/1</span>
+              </div>
+              
+              <div class="stat-item">
+                <span class="stat-label">History</span>
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: 100%"></div>
+                </div>
+                <span class="stat-value">1/1</span>
+              </div>
+              
+              <div class="stat-item">
+                <span class="stat-label">Technology</span>
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: 0%"></div>
+                </div>
+                <span class="stat-value">0/1</span>
+              </div>
+            </div>
+
+            <!-- Difficulty Performance -->
+            <div class="stat-card">
+              <h3>By Difficulty</h3>
+              
+              <div class="stat-item">
+                <span class="stat-label">Easy</span>
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: 100%"></div>
+                </div>
+                <span class="stat-value">3/3</span>
+              </div>
+              
+              <div class="stat-item">
+                <span class="stat-label">Medium</span>
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: 0%"></div>
+                </div>
+                <span class="stat-value">0/2</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Summary Section -->
+        <div class="ai-summary-section">
+          <h2>AI Evaluation Summary</h2>
+          <div class="ai-summary-content">
+            <div class="summary-text">
+              <p><strong>Strengths:</strong> You excel in General knowledge and Science categories, showing strong foundational understanding. Your performance on easy difficulty questions is perfect, indicating good grasp of basic concepts.</p>
+              <p><strong>Areas for Improvement:</strong> Math and Technology categories need more attention. Medium difficulty questions seem to be challenging, suggesting you should focus on more complex problem-solving skills.</p>
+              <p><strong>Recommendations:</strong> Practice more medium-level questions across all categories. Focus on understanding mathematical concepts and stay updated with technology trends. Consider reviewing fundamental principles in weaker areas.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <form action="{{ url_for('home') }}" method="GET" class="home-form">
+            <button type="submit" class="btn-primary">Back Home</button>
+          </form>
+          <form action="{{ url_for('home') }}" method="POST" class="retry-form">
+            <button type="submit" class="btn-secondary">Try Again</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
