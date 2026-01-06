@@ -26,14 +26,9 @@ def home():
     session.clear()
 
     if request.method == 'POST':
-        category = request.form.get('category')
-        type_ = request.form.get('type')
-        difficulty = request.form.get('difficulty')
-
-        session['questions'] = getQuestion(category,difficulty,type_)
-        session['score'] = 0
-
-        return redirect(url_for('quiz',questionId = 1))
+        input = request.form.get('prompt')
+        print(input)
+        return redirect(url_for('home'))
         
     return render_template("index.html")
 
@@ -67,4 +62,4 @@ def score():
                                         total = len(session.get('questions',[])))
 
 if __name__ == "__main__":
-    app.run(debug=False,host='0.0.0.0')
+    app.run(debug=True,host='0.0.0.0')
