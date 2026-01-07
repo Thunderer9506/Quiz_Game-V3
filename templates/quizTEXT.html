@@ -22,7 +22,7 @@
               class="fa-solid fa-pen"
               style="background-color: #e9f5ff; color: #0077ff"
             ></i>
-            <h2>{{ questions['category'] }}</h2>
+            <h2>{{ questions['Category'] }}</h2>
           </div>
 
           <div class="toggleMode">
@@ -37,14 +37,14 @@
         <div class="quiz-main">
           <div class="quiz-question-area">
             <p class="questionNo">
-              <i>Question {{ questions['id'] }} of {{ total_questions }}</i>
+              <i>Question {{ questions['QuestionNumber'] }} of {{ total_questions }}</i>
             </p>
-            <h1 class="question">{{ questions['question'] }}</h1>
+            <h1 class="question">{{ questions['Question'] }}</h1>
           </div>
 
           <form
             class="quiz-text-area"
-            action="{{ url_for('quiz', questionId=questions['id']) }}"
+            action="{{ url_for('quiz', questionId=questions['QuestionNumber']) }}"
             method="post"
           >
             <label class="text-answer-label" for="answer">

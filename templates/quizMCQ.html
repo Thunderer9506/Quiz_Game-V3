@@ -22,7 +22,7 @@
               class="fa-solid fa-code"
               style="background-color: #fff1e9; color: orange"
             ></i>
-            <h2>{{ questions['category'] }}</h2>
+            <h2>{{ questions['Category'] | title }}</h2>
           </div>
 
           <div class="toggleMode">
@@ -37,17 +37,17 @@
         <div class="quiz-main">
           <div class="quiz-question-area">
             <p class="questionNo">
-              <i>Question {{ questions['id'] }} of {{ total_questions }}</i>
+              <i>Question {{ questions['QuestionNumber'] }} of {{ total_questions }}</i>
             </p>
-            <h1 class="question">{{ questions['question'] }}</h1>
+            <h1 class="question">{{ questions['Question'] }}</h1>
           </div>
 
           <form
             class="quiz-options-area"
-            action="{{ url_for('quiz', questionId=questions['id']) }}"
+            action="{{ url_for('quiz', questionId=questions['QuestionNumber']) }}"
             method="post"
           >
-            {% for item in questions['options'] %}
+            {% for item in questions['Options'] %}
               <label class="choice boxIcon">
                 <input
                   type="radio"
@@ -57,16 +57,8 @@
                   required
                 />
                 <span class="choice-content">
-                  {% if loop.index == 1 %}
-                    <i class="fa-solid fa-a"></i>
-                  {% elif loop.index == 2 %}
-                    <i class="fa-solid fa-b"></i>
-                  {% elif loop.index == 3 %}
-                    <i class="fa-solid fa-c"></i>
-                  {% else %}
-                    <i class="fa-solid fa-d"></i>
-                  {% endif %}
-                  <p class="mcq">{{ item }}</p>
+                    <i class="fa-solid fa-{{loop.index}}"></i>
+                    <p class="mcq">{{ item }}</p>
                 </span>
               </label>
             {% endfor %}
