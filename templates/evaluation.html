@@ -61,7 +61,7 @@
                   {% else %}
                     <div class="stat-fill" style="width: 0%"></div>
                   {% endif %}
-                </div>
+                </div>  
                 <span class="stat-value">{{ category_correct }}/{{ scores|length }}</span>
               </div>
               {% endfor %}
@@ -92,11 +92,16 @@
         <div class="ai-summary-section">
           <h2>AI Evaluation Summary</h2>
           <div class="ai-summary-content">
+            {% if ai_evaluation %}
+            <div class="ai-evaluation">
+              {{ ai_evaluation|safe }}
+            </div>
+            {% else %}
             <div class="summary-text">
               <p><strong>Strengths:</strong> You excel in General knowledge and Science categories, showing strong foundational understanding. Your performance on easy difficulty questions is perfect, indicating good grasp of basic concepts.</p>
               <p><strong>Areas for Improvement:</strong> Math and Technology categories need more attention. Medium difficulty questions seem to be challenging, suggesting you should focus on more complex problem-solving skills.</p>
               <p><strong>Recommendations:</strong> Practice more medium-level questions across all categories. Focus on understanding mathematical concepts and stay updated with technology trends. Consider reviewing fundamental principles in weaker areas.</p>
-            </div>
+            {% endif %}
           </div>
         </div>
 
