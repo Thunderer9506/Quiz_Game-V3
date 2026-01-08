@@ -78,7 +78,7 @@ class Agent:
                 {"messages": HumanMessage(input)},
                 config={"configurable": {"thread_id": "1"}}
             )
-            return result['structured_output']
+            return result['structured_response']
         except Exception as e:
             raise QuestionAgentError(f"Failed to generate questions: {e}")
             
