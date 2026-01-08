@@ -44,7 +44,7 @@
 
           <form
             class="quiz-options-area"
-            action="{{ url_for('quiz', questionId=questions['QuestionNumber']) }}"
+            action="{{ url_for('quiz', question_id=questions['QuestionNumber']) }}"
             method="post"
           >
             {% for item in questions['Options'] %}
