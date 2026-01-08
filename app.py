@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from dotenv import load_dotenv
 import os
-from agents.QuestionAgent import Agent, Question,QuestionList
+from agents.QuestionAgent import Agent as QuestionAgent
 from agents.EvaluationAgent import Agent as EvaluationAgent
 import markdown 
 
@@ -11,8 +11,7 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 
-question_agent = Agent()
-
+question_agent = QuestionAgent()
 eval_agent = EvaluationAgent()
 
 
