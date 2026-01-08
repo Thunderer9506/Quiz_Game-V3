@@ -21,7 +21,12 @@ class Question(BaseModel):
 class QuestionList(BaseModel):
     """List of Questions"""
     questions: List[Question] = Field(description="List of quiz questions")
-    
+
+# Custom Error
+class QuestionAgentError(Exception):
+    def __init__(self, message: str) -> None:
+        self.message = message
+        super().__init__(self.message)
 
 
 sysMsg = '''
@@ -51,24 +56,31 @@ Follow the output schema strictly.
 
 class Agent:
     def __init__(self):
-        os.environ['GROQ_API_KEY'] = os.getenv("GROQ_API_KEY") #type:ignore
-        self.model = ChatGroq(
-            model="openai/gpt-oss-120b",
-            temperature=0.8,
-        )
-        self.agent = create_agent(
-            self.model,
-            system_prompt=SystemMessage(sysMsg),
-            response_format=QuestionList,
-            checkpointer=InMemorySaver()
-        )
+        try: 
+            if os.getenv("GROQ_API_KEY"):
+                os.environ['GROQ_API_KEY'] = os.getenv("GROQ_API_KEY")
+            self.model = ChatGroq(
+                model="openai/gpt-oss-120b",
+                temperature=0.8,
+            )
+            self.agent = create_agent(
+                self.model,
+                system_prompt=SystemMessage(sysMsg),
+                response_format=QuestionList,
+                checkpointer=InMemorySaver()
+            )
+        except Exception as e:
+            raise QuestionAgentError(f"Failed to initialize agent: {e}")
         
-        
-    def getQuestion(self,input:str):
-        result = self.agent.invoke({"messages": HumanMessage(input)},
-                            config={"configurable": {"thread_id": "1"}}
-                        )
-        return result['structured_response']
+    def getQuestion(self, input: str):
+        try:
+            result = self.agent.invoke(
+                {"messages": HumanMessage(input)},
+                config={"configurable": {"thread_id": "1"}}
+            )
+            return result['structured_output']
+        except Exception as e:
+            raise QuestionAgentError(f"Failed to generate questions: {e}")
             
 
 # if __name__ == "__main__":
