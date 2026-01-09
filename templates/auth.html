@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login / Signup - AI Quiz App</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/base.css')}}" />
+    <link rel="stylesheet" href="{{url_for('static', filename='css/auth.css')}}" />
+    <script src="https://kit.fontawesome.com/acee086188.js" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input" />
+
+    <div class="page-wrapper auth-page">
+      <header class="top-bar">
+        <div class="toggleMode">
+          <i class="fa-solid fa-sun icon"></i>
+          <label class="switch" for="theme-toggle">
+            <span class="slider"></span>
+          </label>
+          <i class="fa-solid fa-moon icon"></i>
+        </div>
+      </header>
+
+      <main class="auth-container">
+        <div class="auth-card">
+          <!-- Tab Buttons -->
+          <div class="auth-tabs">
+            <button class="tab-btn active" data-tab="login">Login</button>
+            <button class="tab-btn" data-tab="signup">Sign Up</button>
+          </div>
+
+          <!-- Login Form -->
+          <form id="login-form" class="auth-form active" method="POST">
+            <div class="form-group">
+              <label for="login-email">Email</label>
+              <input type="email" id="login-email" name="email" placeholder="Enter your email" required>
+            </div>
+
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
+            </div>
+
+            <div class="form-options">
+              <label class="checkbox-label">
+                <input type="checkbox" name="remember">
+                <span class="checkmark"></span>
+                Remember me
+              </label>
+              <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="submit">Login</button>
+          </form>
+
+          <!-- Signup Form -->
+          <form id="signup-form" class="auth-form" method="POST">
+            <div class="form-group">
+              <label for="signup-username">Username</label>
+              <input type="text" id="signup-username" name="username" placeholder="Choose a username" required>
+            </div>
+
+            <div class="form-group">
+              <label for="signup-email">Email</label>
+              <input type="email" id="signup-email" name="email" placeholder="Enter your email" required>
+            </div>
+
+            <div class="form-group">
+              <label for="signup-password">Password</label>
+              <input type="password" id="signup-password" name="password" placeholder="Create a password" required>
+            </div>
+
+            <div class="form-group">
+              <label for="signup-confirm-password">Confirm Password</label>
+              <input type="password" id="signup-confirm-password" name="confirm_password" placeholder="Confirm your password" required>
+            </div>
+
+            <div class="form-options">
+              <label class="checkbox-label">
+                <input type="checkbox" name="terms" required>
+                <span class="checkmark"></span>
+                I agree to the terms and conditions
+              </label>
+            </div>
+
+            <button type="submit" class="submit">Sign Up</button>
+          </form>
+
+          <div class="auth-footer">
+            <p class="switch-text">
+              Don't have an account? <a href="#" class="switch-tab" data-tab="signup">Sign up</a>
+            </p>
+            <p class="switch-text">
+              Already have an account? <a href="#" class="switch-tab" data-tab="login">Login</a>
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      // Tab switching
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const authForms = document.querySelectorAll('.auth-form');
+      const switchTabs = document.querySelectorAll('.switch-tab');
+      const switchTexts = document.querySelectorAll('.switch-text');
+
+      function switchTab(tabName) {
+        // Update buttons
+        tabBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
+
+        // Update forms
+        authForms.forEach(form => {
+          form.classList.toggle('active', form.id === `${tabName}-form`);
+        });
+
+        // Update footer text
+        if (tabName == "login"){
+            switchTexts[0].style.display = "block";
+            switchTexts[1].style.display = "none";
+        } else{
+            switchTexts[0].style.display = "none";
+            switchTexts[1].style.display = "block";
+        }
+        
+      }
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      switchTabs.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          switchTab(link.dataset.tab);
+        });
+      });
+
+      // Form submission
+      document.querySelectorAll('.auth-form').forEach(form => {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          // Add your form submission logic here
+          console.log('Form submitted:', form.id);
+        });
+      });
+
+      // Forgot password link
+      document.querySelector('.forgot-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('Forgot password clicked');
+      });
+    </script>
+  </body>
+</html>
