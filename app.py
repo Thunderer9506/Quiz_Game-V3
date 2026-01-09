@@ -103,7 +103,12 @@ question_agent = QuestionAgent()
 eval_agent = EvaluationAgent()
 config = Config()
 
-@app.route("/", methods=["GET", "POST"])
+
+@app.route("/")
+def index():
+    return render_template("auth.html")
+
+@app.route("/home", methods=["GET", "POST"])
 def home():
     config.clear_session()
 
