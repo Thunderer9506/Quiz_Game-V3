@@ -43,9 +43,11 @@
         <div class="credits">Credits: 0</div>
       </main>
 
-      <button class="logout-btn" type="button" aria-label="Logout">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i>
-      </button>
+      <form action="{{url_for('logout')}}" method="get">
+        <button class="logout-btn" type="submit" aria-label="Logout">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+      </form>
     </div>
   </body>
 </html>
