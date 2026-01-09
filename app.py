@@ -1,13 +1,18 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from dotenv import load_dotenv
 import os
 from agents.QuestionAgent import Agent as QuestionAgent
 from agents.EvaluationAgent import Agent as EvaluationAgent
 from flask_migrate import Migrate
 from models import db
+from schemas.user import User
+from schemas.question import Question
+from schemas.quiz_session import Sessions
+from sqlalchemy.exc import IntegrityError
 import markdown
 import logging
 import bleach
+import uuid
 
 # Create and configure logger
 logging.basicConfig(filename="mainApp.log",
@@ -108,7 +113,53 @@ config = Config()
 def index():
     return render_template("auth.html")
 
-@app.route("/home", methods=["GET", "POST"])
+@app.post("/login")
+def login():
+    email = request.form.get("email")
+    password = request.form.get("password")
+    is_exist = User.query.filter_by(email=email).first()
+    if is_exist:
+        if is_exist.password_hash == password:
+            session["user_id"] = is_exist.id
+            return redirect(url_for("home"))
+        else:
+            flash('Invalid username or password. Please try again.', 'error')
+    else:
+        flash('Invalid username or password. Please try again.', 'error')
+    return redirect(url_for("index"))
+
+@app.post("/signup")
+def signup():
+    username = request.form.get("username")
+    email = request.form.get("email")
+    password = request.form.get("password")
+    confirm_password = request.form.get("confirm_password")
+    if password != confirm_password:
+        flash('Passwords do not match. Please try again.', 'error')
+        return redirect(url_for("index"))
+    
+    try:
+        new_user = User(id=uuid.uuid4(),username=username,email=email,password_hash=password)
+        db.session.add(new_user)
+        db.session.commit()
+        session["user_id"] = new_user.id
+        return redirect(url_for("home"))
+    except IntegrityError as e:
+        logger.error(f"User already excist {e}")
+        flash('User already Excist', 'error')
+    except Exception as e:
+        logger.error(f"Error creating user: {e}")
+        flash('An error occurred. Please try again.', 'error')
+    return redirect(url_for("index"))
+    
+
+@app.get("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
+
+
+@app.route("/home", methods=["POST",'GET'])
 def home():
     config.clear_session()
 
