@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 import os
 from agents.QuestionAgent import Agent as QuestionAgent
 from agents.EvaluationAgent import Agent as EvaluationAgent
+from flask_migrate import Migrate
+from models import db
 import markdown
 import logging
 import bleach
@@ -83,82 +85,93 @@ class Config:
         self.session["user_answers"] = user_answers
 
 
-def main():
-    app = Flask(__name__)
-    if os.getenv("SECRET_KEY"):
-        app.secret_key = os.getenv("SECRET_KEY")
 
-    question_agent = QuestionAgent()
-    eval_agent = EvaluationAgent()
-    config = Config()
+app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:admin@localhost:5432/quiz_app"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+migrate = Migrate(app, db)
+db.init_app(app)
+migrate.init_app(app, db)
 
-    @app.route("/", methods=["GET", "POST"])
-    def home():
-        config.clear_session()
+with app.app_context():
+    db.create_all()
 
-        if request.method == "POST":
-            input = bleach.clean(request.form.get("prompt"))
-            questions = question_agent.getQuestion(input)
-            config.initSessions(questions)
-            logger.debug("All the sessions initialized")
-            return redirect(url_for("quiz", question_id=1))
+if os.getenv("SECRET_KEY"):
+    app.secret_key = os.getenv("SECRET_KEY")
 
-        return render_template("index.html")
+question_agent = QuestionAgent()
+eval_agent = EvaluationAgent()
+config = Config()
 
+@app.route("/", methods=["GET", "POST"])
+def home():
+    config.clear_session()
 
-    @app.route("/questionPage/<int:question_id>", methods=["GET", "POST"])
-    def quiz(question_id):
-        if "questions" not in session or not session["questions"]:
-            return redirect(url_for("home"))
+    if request.method == "POST":
+        input = bleach.clean(request.form.get("prompt"))
+        questions = question_agent.getQuestion(input)
+        config.initSessions(questions)
+        logger.debug("All the sessions initialized")
+        return redirect(url_for("quiz", question_id=1))
 
-        current_questions = config.getQuestion(question_id)
-        if not current_questions:
-            return redirect(url_for("score"))
-
-
-        if request.method == "POST":
-            answer = request.form.get("answer")
-            q_type = current_questions.get("Type", "mcq")
-            question_key = str(question_id)
-
-            is_duplicate_submission = question_key in session["user_answers"]
-            
-            if q_type == "mcq" or q_type == "true/false":
-                if answer and not is_duplicate_submission:
-                    config.insert_answer(question_key,current_questions,answer,q_type)
-                    choosen_option_text = current_questions["Options"][int(answer) - 1]
-                    if current_questions["Correct"] == choosen_option_text:
-                        if current_questions['QuestionNumber'] <= config.total_questions():
-                            config.update_score()
-                            config.update_performance_metrics(current_questions["Category"],current_questions["Difficulty"],1)
-                    else:
-                        config.update_performance_metrics(current_questions["Category"],current_questions["Difficulty"],0)
-            else:
-                # For question type: text
-                if not is_duplicate_submission:
-                    config.update_score()
-                    config.update_performance_metrics(current_questions["Category"],current_questions["Difficulty"],1)
-            logger.debug("User answer is recorded")
-            return redirect(url_for("quiz", question_id=question_id + 1))
-
-        template_name = "quizTEXT.html" if current_questions.get("Type", "mcq") == "text" else "quizMCQ.html"
-        return render_template(
-            template_name, questions=current_questions, total_questions=config.total_questions()
-        )
+    return render_template("index.html")
 
 
-    @app.route("/score")
-    def score():
-        ai_evaluation = eval_agent.evaluate(f"Questions: {session.get("questions", {})}\nUser Answers: {session.get("user_answers", {})}")
-        return render_template(
-            "evaluation.html",
-            ai_evaluation=markdown.markdown(ai_evaluation),
-            score=config.get_score(),
-            total=config.total_questions(),
-            performance=config.get_performance_metrics(),
-        )
-    return app
+@app.route("/questionPage/<int:question_id>", methods=["GET", "POST"])
+def quiz(question_id):
+    if "questions" not in session or not session["questions"]:
+        return redirect(url_for("home"))
+
+    current_questions = config.getQuestion(question_id)
+    if not current_questions:
+        return redirect(url_for("score"))
+
+
+    if request.method == "POST":
+        answer = request.form.get("answer")
+        q_type = current_questions.get("Type", "mcq")
+        question_key = str(question_id)
+
+        is_duplicate_submission = question_key in session["user_answers"]
+        
+        if q_type == "mcq" or q_type == "true/false":
+            if answer and not is_duplicate_submission:
+                config.insert_answer(question_key,current_questions,answer,q_type)
+                choosen_option_text = current_questions["Options"][int(answer) - 1]
+                if current_questions["Correct"] == choosen_option_text:
+                    if current_questions['QuestionNumber'] <= config.total_questions():
+                        config.update_score()
+                        config.update_performance_metrics(current_questions["Category"],current_questions["Difficulty"],1)
+                else:
+                    config.update_performance_metrics(current_questions["Category"],current_questions["Difficulty"],0)
+        else:
+            # For question type: text
+            if not is_duplicate_submission:
+                config.update_score()
+                config.update_performance_metrics(current_questions["Category"],current_questions["Difficulty"],1)
+        logger.debug("User answer is recorded")
+        return redirect(url_for("quiz", question_id=question_id + 1))
+
+    template_name = "quizTEXT.html" if current_questions.get("Type", "mcq") == "text" else "quizMCQ.html"
+    return render_template(
+        template_name, questions=current_questions, total_questions=config.total_questions()
+    )
+
+
+@app.route("/score")
+def score():
+    ai_evaluation = eval_agent.evaluate(f"Questions: {session.get("questions", {})}\nUser Answers: {session.get("user_answers", {})}")
+    return render_template(
+        "evaluation.html",
+        ai_evaluation=markdown.markdown(ai_evaluation),
+        score=config.get_score(),
+        total=config.total_questions(),
+        performance=config.get_performance_metrics(),
+    )
+
 
 
 if __name__ == "__main__":
-    main().run(debug=True, host="0.0.0.0")
+    logger.debug("Server Started")
+    # app,db = main()
+    app.run(debug=True, host="0.0.0.0")
