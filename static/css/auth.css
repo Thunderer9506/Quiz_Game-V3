@@ -228,3 +228,24 @@
     gap: 0.75rem;
   }
 }
+
+
+.flashes {
+    list-style-type: none;
+    padding: 0;
+    ul{
+      margin: 0;
+    }
+}
+.error {
+    color: white;
+    background-color: #f44336; /* Red background for errors */
+    padding: 10px;
+    border-radius: 4px;
+}
+.success {
+    color: white;
+    background-color: #4CAF50; /* Green background for success */
+    padding: 10px;
+    border-radius: 4px;
+}
