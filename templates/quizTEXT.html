@@ -44,7 +44,7 @@
 
           <form
             class="quiz-text-area"
-            action="{{ url_for('quiz', question_id=questions['QuestionNumber']) }}"
+            action="{{ url_for('quiz', question_id=request.view_args['question_id']) }}"
             method="post"
           >
             <label class="text-answer-label" for="answer">
