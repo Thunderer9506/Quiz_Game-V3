@@ -72,11 +72,11 @@ class Agent:
         except Exception as e:
             raise QuestionAgentError(f"Failed to initialize agent: {e}")
         
-    def getQuestion(self, input: str):
+    def getQuestion(self, input: str,session:str):
         try:
             result = self.agent.invoke(
                 {"messages": HumanMessage(input)},
-                config={"configurable": {"thread_id": "1"}}
+                config={"configurable": {"thread_id": session}}
             )
             return result['structured_response']
         except Exception as e:
