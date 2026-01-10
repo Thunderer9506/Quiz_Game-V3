@@ -340,6 +340,13 @@ def quiz(question_id):
                             current_question.get("Difficulty", ""), 
                             1
                         )
+                    else:
+                        # Incorrect answer - still update performance metrics with score 0
+                        update_performance_metrics(
+                            current_question.get("Category", ""), 
+                            current_question.get("Difficulty", ""), 
+                            0
+                        )
                 else:
                     choosen_option_answer = answer
                     # For text questions
