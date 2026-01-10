@@ -56,13 +56,14 @@
                 <span class="stat-label">{{ category }}</span>
                 <div class="stat-bar">
                   {% set category_correct = scores|select("equalto", 1)|list|length %}
-                  {% if (scores|length) != 0 %}
-                    <div class="stat-fill" style="width: {{ (category_correct / (scores|length)) * 100 }}%"></div>
+                  {% set total_attempts = scores|length %}
+                  {% if total_attempts != 0 %}
+                    <div class="stat-fill" style="width: {{ (category_correct / total_attempts) * 100 }}%"></div>
                   {% else %}
                     <div class="stat-fill" style="width: 0%"></div>
                   {% endif %}
                 </div>  
-                <span class="stat-value">{{ category_correct }}/{{ scores|length }}</span>
+                <span class="stat-value">{{ category_correct }}/{{ total_attempts }}</span>
               </div>
               {% endfor %}
             </div>
@@ -75,13 +76,14 @@
                 <span class="stat-label">{{ difficulty }}</span>
                 <div class="stat-bar">
                   {% set difficulty_correct = scores|select("equalto", 1)|list|length %}
-                  {% if (scores|length) != 0 %}
-                    <div class="stat-fill" style="width: {{ (difficulty_correct / (scores|length)) * 100 }}%"></div>
+                  {% set total_attempts = scores|length %}
+                  {% if total_attempts != 0 %}
+                    <div class="stat-fill" style="width: {{ (difficulty_correct / total_attempts) * 100 }}%"></div>
                   {% else %}
                     <div class="stat-fill" style="width: 0%"></div>
                   {% endif %}
                 </div>
-                <span class="stat-value">{{ difficulty_correct }}/{{ scores|length }}</span>
+                <span class="stat-value">{{ difficulty_correct }}/{{ total_attempts }}</span>
               </div>
               {% endfor %}
             </div>
