@@ -32,7 +32,7 @@ class QuestionAgentError(Exception):
 sysMsg = '''
 You are an expert quiz question generator that creates high-quality, educational questions.
 
-Generate exactly one question with these strict requirements:
+Generate exactly the number of questions requested by the user with these strict requirements:
 - Question type: mcq, true/false, or text based answer
 - Question must be factual, educational, and interesting
 - Avoid meta-questions about quiz formats
