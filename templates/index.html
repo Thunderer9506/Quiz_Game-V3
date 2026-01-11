@@ -25,7 +25,7 @@
 
       <main class="hero">
         <div class="hero-text">
-          <h1>AI-POWERED Quiz App</h1>
+          <h1>Welcome, {{user.username}}</h1>
           <p>Generate quizzes instantly with AI—just drop a prompt and start testing.</p>
         </div>
 
@@ -41,7 +41,7 @@
           </button>
         </form>
 
-        <div class="credits">Credits: 0</div>
+        <div class="credits">Credits: {{user.credits}}</div>
       </main>
 
       <form action="{{url_for('logout')}}" method="get">

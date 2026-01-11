@@ -327,18 +327,26 @@ def logout():
 @app.route("/home", methods=["POST",'GET'])
 @token_required
 def home():
+    stmt = select(User).where(User.id == decode_jwt_token(request.cookies.get("user_id")))
+    user = db.session.execute(stmt).scalar()
+
     if request.method == "POST":
+        if user.credits < 1:
+            flash("Not enough credits. Please purchase more credits.", "error")
+            return redirect(url_for("home"))
         clear_session()
         input = bleach.clean(request.form.get("prompt"))
         session_id = str(uuid.uuid4())
         create_session(session_id, input)
         if create_question(session_id, input):
+            user.credits = int(user.credits) - 1
+            db.session.commit()
             return redirect(url_for("quiz",question_id = session["question_id"][0]))
         else:
             flash("Failed to create quiz questions. Please try again.", "error")
             return redirect(url_for("home"))
         
-    return render_template("index.html")
+    return render_template("index.html",user=user)
 
 
 @app.route("/questionPage/<string:question_id>", methods=["GET", "POST"])
