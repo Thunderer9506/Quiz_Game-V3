@@ -1,20 +1,28 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-from dotenv import load_dotenv
-import os
+# ----------------------------------- Dependencies ------------------------------------------
+from flask import Flask, render_template, request, redirect, url_for, session, flash, make_response
+from flask_migrate import Migrate
+
 from agents.QuestionAgent import Agent as QuestionAgent
 from agents.EvaluationAgent import Agent as EvaluationAgent
-from flask_migrate import Migrate
+
 from models import db
 from schemas.user import User
 from schemas.question import Question
 from schemas.quiz_session import Sessions
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
+
+from dotenv import load_dotenv
+import os
 import markdown
 import logging
 import bleach
 import uuid
 import datetime
+import argon2
+import jwt
+import datetime as dt
+from functools import wraps
 
 # ----------------------------------- Config ------------------------------------------
 
@@ -35,7 +43,11 @@ if os.getenv("SECRET_KEY"):
 
 question_agent = QuestionAgent()
 eval_agent = EvaluationAgent()
+ph = argon2.PasswordHasher()
 
+JWT_SECRET_KEY = os.getenv("SECRET_KEY")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = 24*7
 
 # Create and configure logger
 logging.basicConfig(filename="mainApp.log",
@@ -47,6 +59,40 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 # ----------------------------------- Usefull Functions ------------------------------------------
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get("user_id")
+        if not token:
+            return redirect(url_for("index"))
+        
+        try:
+            user_id = decode_jwt_token(token)
+            if not user_id:
+                return redirect(url_for("index"))
+        except:
+            return redirect(url_for("index"))
+        
+        # Add user to request context
+        return f(*args, **kwargs)
+    return decorated
+
+def generate_jwt_token(user_id):
+    payload = {
+        'user_id': user_id,
+        'exp': dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=JWT_EXPIRATION_HOURS)
+    }
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+
+def decode_jwt_token(token):
+    try:
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        return payload['user_id']
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
 
 def create_session(session_id, title):
     try:
@@ -219,9 +265,13 @@ def login():
     stmt = select(User).where(User.email == email)
     user = db.session.execute(stmt).scalar()
     if user:
-        if user.password_hash == password:
+        if ph.verify(user.password_hash,password):
+            logger.info(f"User {user.username} logged in successfully")
             session["user_id"] = user.id
-            return redirect(url_for("home"))
+            token = generate_jwt_token(user.id)
+            response = make_response(redirect(url_for("home")))
+            response.set_cookie('user_id', token)
+            return response
         else:
             flash('Invalid username or password. Please try again.', 'error')
     else:
@@ -239,31 +289,33 @@ def signup():
         return redirect(url_for("index"))
     
     try:
-        new_user = User(id=uuid.uuid4(),username=username,email=email,password_hash=password)
+        new_user = User(id=str(uuid.uuid4()),username=str(username),email=str(email),password_hash=str(ph.hash(password)))
         db.session.add(new_user)
         db.session.commit()
+        
         session["user_id"] = new_user.id
-        return redirect(url_for("home"))
+        return redirect(url_for("index"))
+
     except IntegrityError as e:
-        logger.error(f"User already excist {e}")
-        flash('User already Excist', 'error')
+        logger.error(f"User already exist {e}")
+        flash('User already Exist', 'error')
+        
     except Exception as e:
         logger.error(f"Error creating user: {e}")
         flash('An error occurred. Please try again.', 'error')
+        
     return redirect(url_for("index"))
     
-
 @app.get("/logout")
+@token_required
 def logout():
     session.clear()
     return redirect(url_for("index"))
 
 
 @app.route("/home", methods=["POST",'GET'])
+@token_required
 def home():
-    if "user_id" not in session:
-        return redirect(url_for("index"))
-
     if request.method == "POST":
         clear_session()
         input = bleach.clean(request.form.get("prompt"))
@@ -279,13 +331,10 @@ def home():
 
 
 @app.route("/questionPage/<string:question_id>", methods=["GET", "POST"])
+@token_required
 def quiz(question_id):
     """Handle quiz questions"""
     try:
-        # Check if user is logged in
-        if "user_id" not in session:
-            return redirect(url_for("index"))
-        
         # Get question from database
         stmt = select(Question).where(Question.id == question_id)
         question = db.session.execute(stmt).scalar()
@@ -385,6 +434,7 @@ def quiz(question_id):
 
 
 @app.route("/score")
+@token_required
 def score():
     update_session()
     
