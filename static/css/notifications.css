@@ -1,0 +1,137 @@
+/* Notification System Styles */
+.notification-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.notification {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin: 8px;
+  padding: 16px;
+  pointer-events: all;
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.notification.notification-enter {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.notification.notification-show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.notification.notification-exit {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-content i {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.notification-content span {
+  flex: 1;
+  font-weight: 500;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.notification-close:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Notification Types */
+.notification.success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.notification.error {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.notification.info {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.notification.warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+/* Dark Mode Notifications */
+[data-theme="dark"] .notification {
+  background: #2d2d2d;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .notification.success {
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+[data-theme="dark"] .notification.error {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+[data-theme="dark"] .notification.info {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+[data-theme="dark"] .notification.warning {
+  background: linear-gradient(135deg, #d97706, #b45309);
+}
+
+[data-theme="dark"] .notification-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .notification {
+    margin: 4px;
+    padding: 12px;
+    max-width: calc(100% - 8px);
+  }
+  
+  .notification-content {
+    gap: 8px;
+  }
+  
+  .notification-content i {
+    font-size: 16px;
+  }
+  
+  .notification-content span {
+    font-size: 14px;
+  }
+}
