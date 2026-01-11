@@ -4,7 +4,6 @@ from flask_migrate import Migrate
 
 from agents.QuestionAgent import Agent as QuestionAgent
 from agents.EvaluationAgent import Agent as EvaluationAgent
-
 from models import db
 from schemas.user import User
 from schemas.question import Question
@@ -255,62 +254,74 @@ def update_session():
 
 @app.route("/")
 def index():
-    return render_template("auth.html")
+    return redirect(url_for("login"))
 
-@app.post("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    clear_session()
-    email = request.form.get("email")
-    password = request.form.get("password")
-    stmt = select(User).where(User.email == email)
-    user = db.session.execute(stmt).scalar()
-    if user:
-        if ph.verify(user.password_hash,password):
-            logger.info(f"User {user.username} logged in successfully")
-            session["user_id"] = user.id
-            token = generate_jwt_token(user.id)
-            response = make_response(redirect(url_for("home")))
-            response.set_cookie('user_id', token)
-            return response
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        stmt = select(User).where(User.email == email)
+        user = db.session.execute(stmt).scalar()
+        if user:
+            try:
+                passwordVerify = ph.verify(user.password_hash,password)
+            except:
+                passwordVerify = False
+            if passwordVerify:
+                logger.info(f"User {user.username} logged in successfully")
+                session["user_id"] = user.id
+                token = generate_jwt_token(user.id)
+                response = make_response(redirect(url_for("home")))
+                response.set_cookie('user_id', token)
+                flash("Login Successful", "success")
+                return response
+            else:
+                flash('Password or Email is Wrong', 'error')
         else:
-            flash('Invalid username or password. Please try again.', 'error')
-    else:
-        flash('Invalid username or password. Please try again.', 'error')
-    return redirect(url_for("index"))
+            flash('Password or Email is Wrong', 'error')
+    return render_template("login.html")
 
-@app.post("/signup")
+@app.route("/signup", methods=["GET", "POST"])
 def signup():
-    username = request.form.get("username")
-    email = request.form.get("email")
-    password = request.form.get("password")
-    confirm_password = request.form.get("confirm_password")
-    if password != confirm_password:
-        flash('Passwords do not match. Please try again.', 'error')
-        return redirect(url_for("index"))
-    
-    try:
-        new_user = User(id=str(uuid.uuid4()),username=str(username),email=str(email),password_hash=str(ph.hash(password)))
-        db.session.add(new_user)
-        db.session.commit()
+    if request.method == "POST":
+        username = request.form.get("username")
+        email = request.form.get("email")
+        password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
         
-        session["user_id"] = new_user.id
-        return redirect(url_for("index"))
+        if password != confirm_password:
+            flash('Passwords do not match. Please try again.', 'error')
+            return redirect(url_for("signup"))
+        
+        try:
+            new_user = User(
+                id=str(uuid.uuid4()),
+                username=username,
+                email=email,
+                password_hash=str(ph.hash(password))
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Account created successfully! Please login.', 'success')
+            return redirect(url_for("index"))
+        except IntegrityError as e:
+            logger.error(f"User already exists: {e}")
+            flash('Email already exists. Please use a different email.', 'error')
+            return redirect(url_for("signup"))
+        except Exception as e:
+            logger.error(f"Error creating user: {e}")
+            flash('An error occurred. Please try again.', 'error')
+            return redirect(url_for("signup"))
+    return render_template("signup.html")
 
-    except IntegrityError as e:
-        logger.error(f"User already exist {e}")
-        flash('User already Exist', 'error')
-        
-    except Exception as e:
-        logger.error(f"Error creating user: {e}")
-        flash('An error occurred. Please try again.', 'error')
-        
-    return redirect(url_for("index"))
-    
 @app.get("/logout")
 @token_required
 def logout():
     session.clear()
-    return redirect(url_for("index"))
+    response = make_response(redirect(url_for("index")))
+    response.delete_cookie('user_id')
+    return response
 
 
 @app.route("/home", methods=["POST",'GET'])
