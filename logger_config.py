@@ -1,10 +1,14 @@
 import logging
 
-# Create and configure logger
-logging.basicConfig(filename="mainApp.log",
-                    format='%(asctime)s %(message)s',
-                    filemode='w')
-
-logger = logging.getLogger()
+# Configure logger
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s %(levelname)s %(name)s %(message)s',
+    handlers=[
+        logging.FileHandler("mainApp.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 logger.setLevel(logging.DEBUG)
