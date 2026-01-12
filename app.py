@@ -38,8 +38,6 @@ migrate = Migrate(app, db)
 db.init_app(app)
 migrate.init_app(app, db)
 
-with app.app_context():
-    db.create_all()
 
 if os.getenv("SECRET_KEY"):
     app.secret_key = os.getenv("SECRET_KEY")
@@ -286,8 +284,3 @@ def handle_exception(error):
     """Handle all unhandled exceptions"""
     logger.error(f"Unhandled Exception: {request.url} - {type(error).__name__}: {str(error)}", exc_info=True)
     return render_template('error.html', error_no='500', error_desc='An unexpected error occurred. Please try again later.'), 500
-
-
-if __name__ == "__main__":
-    logger.debug("Server Started")
-    app.run(debug=True, host="0.0.0.0")

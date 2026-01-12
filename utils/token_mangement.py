@@ -40,6 +40,9 @@ def decode_jwt_token(token):
 def generate_jwt_token(user_id):
     payload = {
         'user_id': user_id,
-        'exp': dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=JWT_EXPIRATION_HOURS)
+        'exp': dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=JWT_EXPIRATION_HOURS),
+        'httponly': True,
+        'secure': True,
+        'samesite': 'Lax',
     }
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
