@@ -40,9 +40,14 @@
 
         <div class="quiz-main">
           <div class="quiz-question-area">
-            <p class="questionNo">
-              <i>Question {{ questions['QuestionNumber'] }} of {{ total_questions }}</i>
-            </p>
+            <div class="question-header">
+              <p class="questionNo">
+                <i>Question {{ questions['QuestionNumber'] }} of {{ total_questions }}</i>
+              </p>
+              <div class="difficulty-badge difficulty-{{ questions['Difficulty'] | lower }}">
+                {{ questions['Difficulty'] }}
+              </div>
+            </div>
             <h1 class="question">{{ questions['Question'] }}</h1>
           </div>
 
