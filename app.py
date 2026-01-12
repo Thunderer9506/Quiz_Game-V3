@@ -4,27 +4,23 @@ from flask_migrate import Migrate
 
 from agents.QuestionAgent import Agent as QuestionAgent
 from agents.EvaluationAgent import Agent as EvaluationAgent
+
 from models import db
 from schemas.user import User
 from schemas.question import Question
-from schemas.quiz_session import Sessions
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 
 from route.payment import payment_bp
-from utils import token_required, decode_jwt_token
+from route.auth import auth_bp
+from utils.token_mangement import token_required, decode_jwt_token
+from utils.session_management import create_session, update_session, total_questions, get_performance_metrics, update_performance_metrics, clear_session, insert_answer, update_score
+from logger_config import logger
 
 from dotenv import load_dotenv
 import os
 import markdown
-import logging
 import bleach
 import uuid
-import datetime
-import argon2
-import jwt
-import datetime as dt
-from functools import wraps
 
 # ----------------------------------- Config ------------------------------------------
 
@@ -35,6 +31,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("POSTGRES_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.register_blueprint(payment_bp)
+app.register_blueprint(auth_bp)
 
 migrate = Migrate(app, db)
 db.init_app(app)
@@ -48,47 +45,7 @@ if os.getenv("SECRET_KEY"):
 
 question_agent = QuestionAgent()
 eval_agent = EvaluationAgent()
-ph = argon2.PasswordHasher()
 
-JWT_SECRET_KEY = os.getenv("SECRET_KEY")
-JWT_ALGORITHM = "HS256"
-JWT_EXPIRATION_HOURS = 24*7
-
-# Create and configure logger
-logging.basicConfig(filename="mainApp.log",
-                    format='%(asctime)s %(message)s',
-                    filemode='w')
-
-logger = logging.getLogger()
-
-logger.setLevel(logging.DEBUG)
-
-# ----------------------------------- Usefull Functions ------------------------------------------
-
-def generate_jwt_token(user_id):
-    payload = {
-        'user_id': user_id,
-        'exp': dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=JWT_EXPIRATION_HOURS)
-    }
-    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
-
-def create_session(session_id, title):
-    try:
-        new_session = Sessions(
-            id= session_id, 
-            user_id= session["user_id"],
-            title = title,
-            total_questions=0  # Will be updated later
-            )
-        if new_session:
-            db.session.add(new_session)
-            db.session.commit()
-            session["session_id"] = session_id
-            logger.debug(f"New session created: {session_id}")
-            return True
-    except Exception as e:
-        logger.error(f"Encountered error while creating session: {e}")
-        return False
 
 def create_question(session_id, input):
     """Create a new quiz session with questions"""
@@ -130,177 +87,10 @@ def create_question(session_id, input):
         logger.error(f"Error creating question session: {e}")
         db.session.rollback()
         return False
-    
-def total_questions():
-    """Get total questions from session"""
-    try:
-        question_ids = session.get('question_id', [])
-        return len(question_ids) if question_ids else 0
-    except Exception as e:
-        logger.error(f"Error getting total questions: {e}")
-        return 0
 
-def get_performance_metrics():
-    """Get performance metrics from session"""
-    try:
-        return session.get('performance_metrics', {
-            "category": {},
-            "difficulty": {"easy": [], "medium": [], "hard": []}
-        })
-    except Exception as e:
-        logger.error(f"Error getting performance metrics: {e}")
-        return {
-            "category": {},
-            "difficulty": {"easy": [], "medium": [], "hard": []}
-        }
-
-def update_performance_metrics(category, difficulty, score):
-    """Update performance metrics in session"""
-    try:
-        metrics = session.get('performance_metrics', {
-            "category": {},
-            "difficulty": {"easy": [], "medium": [], "hard": []}
-        })
-        
-        # Update category metrics
-        if category not in metrics["category"]:
-            metrics["category"][category] = [score]
-        else:
-            metrics["category"][category].append(score)
-        
-        # Update difficulty metrics
-        if difficulty in metrics["difficulty"]:
-            metrics["difficulty"][difficulty].append(score)
-        else:
-            metrics["difficulty"][difficulty] = [score]
-        
-        session["performance_metrics"] = metrics
-    except Exception as e:
-        logger.error(f"Error updating performance metrics: {e}")
-
-def clear_session():
-    """Clear session data"""
-    try:
-        session["score"] = 0
-        session["performance_metrics"] = {
-            "category": {},
-            "difficulty": {"easy": [], "medium": [], "hard": []}
-        }
-        session["curr_question"] = 0
-        session["user_answers"] = {}
-    except Exception as e:
-        logger.error(f"Error clearing session: {e}")
-
-def insert_answer(question_key, current_question, answer, q_type):
-    """Insert user answer into session"""
-    try:
-        user_answers = session.get("user_answers", {})
-        user_answers[question_key] = {
-            "question": current_question.get("Question", ""),
-            "user_answer": answer,
-            "correct_answer": current_question.get("Correct", ""),
-            "type": q_type,
-            "category": current_question.get("Category", ""),
-            "difficulty": current_question.get("Difficulty", "")
-        }
-        session["user_answers"] = user_answers
-    except Exception as e:
-        logger.error(f"Error inserting answer: {e}")
-
-def update_score():
-    """Update user score in session"""
-    try:
-        current_score = session.get("score", 0)
-        if isinstance(current_score, int):
-            session["score"] = current_score + 1
-        else:
-            logger.warning(f"Invalid score type: {type(current_score)}")
-            session["score"] = 1  # Reset to 1 if invalid type
-    except Exception as e:
-        logger.error(f"Error updating score: {e}")
-        session["score"] = 1
-
-def update_session():
-    stmt = select(Sessions).where(Sessions.id == session.get("session_id",""))
-    curr_session = db.session.execute(stmt).scalar()
-    curr_session.total_questions = total_questions()
-    curr_session.score = session.get("score",0)
-    curr_session.status = "ended"
-    curr_session.completed_at = datetime.datetime.now(datetime.timezone.utc)
-    db.session.commit()
 
 # ----------------------------------- Routes ------------------------------------------
 
-@app.route("/")
-def index():
-    return redirect(url_for("login"))
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
-        stmt = select(User).where(User.email == email)
-        user = db.session.execute(stmt).scalar()
-        if user:
-            try:
-                passwordVerify = ph.verify(user.password_hash,password)
-            except:
-                passwordVerify = False
-            if passwordVerify:
-                logger.info(f"User {user.username} logged in successfully")
-                session["user_id"] = user.id
-                token = generate_jwt_token(user.id)
-                response = make_response(redirect(url_for("home")))
-                response.set_cookie('user_id', token)
-                flash("Login Successful", "success")
-                return response
-            else:
-                flash('Password or Email is Wrong', 'error')
-        else:
-            flash('Password or Email is Wrong', 'error')
-    return render_template("login.html")
-
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        username = request.form.get("username")
-        email = request.form.get("email")
-        password = request.form.get("password")
-        confirm_password = request.form.get("confirm_password")
-        
-        if password != confirm_password:
-            flash('Passwords do not match. Please try again.', 'error')
-            return redirect(url_for("signup"))
-        
-        try:
-            new_user = User(
-                id=str(uuid.uuid4()),
-                username=username,
-                email=email,
-                password_hash=str(ph.hash(password))
-            )
-            db.session.add(new_user)
-            db.session.commit()
-            flash('Account created successfully! Please login.', 'success')
-            return redirect(url_for("index"))
-        except IntegrityError as e:
-            logger.error(f"User already exists: {e}")
-            flash('Email already exists. Please use a different email.', 'error')
-            return redirect(url_for("signup"))
-        except Exception as e:
-            logger.error(f"Error creating user: {e}")
-            flash('An error occurred. Please try again.', 'error')
-            return redirect(url_for("signup"))
-    return render_template("signup.html")
-
-@app.get("/logout")
-@token_required
-def logout():
-    session.clear()
-    response = make_response(redirect(url_for("index")))
-    response.delete_cookie('user_id')
-    return response
 
 
 @app.route("/home", methods=["POST",'GET'])
@@ -436,7 +226,7 @@ def quiz(question_id):
 def score():
     update_session()
     
-    ai_evaluation = eval_agent.evaluate(f"Questions: {session.get("questions", {})}\nUser Answers: {session.get("user_answers", {})}")
+    ai_evaluation = eval_agent.evaluate(f"Questions: {session.get("questions", {})}\nUser Answers: {session.get("user_answers", {})}",session["session_id"])
     return render_template(
         "evaluation.html",
         ai_evaluation=markdown.markdown(ai_evaluation),
