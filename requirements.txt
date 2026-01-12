@@ -14,4 +14,3 @@ python-dotenv
 razorpay
 requests
 sqlalchemy
-uuid
