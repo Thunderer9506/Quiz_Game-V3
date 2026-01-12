@@ -13,7 +13,6 @@ auth_bp = Blueprint('auth', __name__)
 ph = argon2.PasswordHasher()
 
 @auth_bp.route("/")
-@token_required
 def index():
     return redirect(url_for("auth.login"))
 
