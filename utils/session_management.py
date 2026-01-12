@@ -8,9 +8,13 @@ import datetime
 
 def create_session(session_id, title):
     try:
+        user_id = session.get("user_id")
+        if not user_id:
+            logger.error("Missing user_id in session while creating session")
+            return False
         new_session = Sessions(
             id= session_id, 
-            user_id= session["user_id"],
+            user_id=user_id,
             title = title,
             total_questions=0  # Will be updated later
             )
@@ -22,6 +26,7 @@ def create_session(session_id, title):
             return True
     except Exception as e:
         logger.error(f"Encountered error while creating session: {e}")
+        db.session.rollback()
         return False
 
 
@@ -118,10 +123,24 @@ def update_score():
         session["score"] = 1
 
 def update_session():
-    stmt = select(Sessions).where(Sessions.id == session.get("session_id",""))
-    curr_session = db.session.execute(stmt).scalar()
-    curr_session.total_questions = total_questions()
-    curr_session.score = session.get("score",0)
-    curr_session.status = "ended"
-    curr_session.completed_at = datetime.datetime.now(datetime.timezone.utc)
-    db.session.commit()
+    try:
+        stmt = select(Sessions).where(Sessions.id == session.get("session_id", ""))
+        curr_session = db.session.execute(stmt).scalar()
+        if not curr_session:
+            logger.error("Session not found")
+            return False
+        curr_session.total_questions = total_questions()
+        curr_session.score = session.get("score", 0)
+        curr_session.status = "ended"
+        curr_session.completed_at = datetime.datetime.now(datetime.timezone.utc)
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error committing session update: {e}")
+            return False
+        return True
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error updating session: {e}")
+        return False

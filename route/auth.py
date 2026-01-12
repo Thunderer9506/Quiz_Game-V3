@@ -68,10 +68,12 @@ def signup():
             flash('Account created successfully! Please login.', 'success')
             return redirect(url_for("auth.index"))
         except IntegrityError as e:
+            db.session.rollback()
             logger.error(f"User already exists: {e}")
             flash('Email already exists. Please use a different email.', 'error')
             return redirect(url_for("auth.signup"))
         except Exception as e:
+            db.session.rollback()
             logger.error(f"Error creating user: {e}")
             flash('An error occurred. Please try again.', 'error')
             return redirect(url_for("auth.signup"))

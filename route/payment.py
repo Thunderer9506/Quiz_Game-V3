@@ -33,16 +33,34 @@ def payment_page():
 @token_required
 def payment():
     try:
-        credits = float(request.form.get("credits"))
+        credits_raw = request.form.get("credits")
+        if credits_raw is None:
+            flash("Invalid credits", "error")
+            return redirect(url_for("payment.payment_page"))
+
+        try:
+            credits = float(credits_raw)
+        except (TypeError, ValueError):
+            flash("Invalid credits", "error")
+            return redirect(url_for("payment.payment_page"))
+
+        if credits <= 0:
+            flash("Invalid credits", "error")
+            return redirect(url_for("payment.payment_page"))
         
         # Validate minimum credits
         if credits < 5:
             flash("Minimum 5 credits required", "error")
-            return redirect(url_for("payment_page"))
+            return redirect(url_for("payment.payment_page"))
         
         
         # Calculate amounts
-        credit_price = float(os.getenv("CREDITS_PER_PRICE"))
+        credit_price_raw = os.getenv("CREDITS_PER_PRICE")
+        if not credit_price_raw:
+            flash("Payment configuration missing. Please try again later.", "error")
+            return redirect(url_for("payment.payment_page"))
+
+        credit_price = float(credit_price_raw)
         subtotal = credits * credit_price
         fees = subtotal * 0.02  # 2% payment fees
         gst = (subtotal + fees) * 0.18  # 18% GST
@@ -125,7 +143,12 @@ def verify_payment():
         # Add credits to user account
         credits_to_add = pending_order['credits']
         user.credits += credits_to_add
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Failed to commit credits update: {e}")
+            return jsonify({"status": "failure", "message": "Could not update credits"}), 500
         
         # Clear session
         session.pop('pending_order', None)
@@ -154,6 +177,9 @@ def razorpay_webhook():
     try:
         # Get webhook secret from environment
         webhook_secret = os.getenv("RAZORPAY_WEBHOOK_SECRET")
+        if not webhook_secret:
+            logger.error("Webhook secret not configured")
+            return jsonify({"status": "error", "message": "Webhook not configured"}), 500
         
         # Verify webhook signature
         webhook_signature = request.headers.get('X-Razorpay-Signature')

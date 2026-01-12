@@ -104,6 +104,7 @@ def create_question(session_id, input):
 def home():
     stmt = select(User).where(User.id == decode_jwt_token(request.cookies.get("user_id")))
     user = db.session.execute(stmt).scalar()
+    session["user_id"] = user.id
 
     if request.method == "POST":
         if user.credits < 1:
@@ -116,7 +117,11 @@ def home():
         if create_question(session_id, input):
             user.credits = int(user.credits) - 1
             db.session.commit()
-            return redirect(url_for("quiz",question_id = session["question_id"][0]))
+            question_ids = session.get("question_id", [])
+            if not question_ids:
+                flash("Failed to create quiz questions. Please try again.", "error")
+                return redirect(url_for("home"))
+            return redirect(url_for("quiz", question_id=question_ids[0]))
         else:
             flash("Failed to create quiz questions. Please try again.", "error")
             return redirect(url_for("home"))
@@ -232,11 +237,14 @@ def quiz(question_id):
 def score():
     update_session()
     
-    ai_evaluation = eval_agent.evaluate(f"Questions: {session.get("questions", {})}\nUser Answers: {session.get("user_answers", {})}",session["session_id"])
+    ai_evaluation = eval_agent.evaluate(
+        f"Questions: {session.get('questions', {})}\nUser Answers: {session.get('user_answers', {})}",
+        session.get("session_id", "")
+    )
     return render_template(
         "evaluation.html",
         ai_evaluation=markdown.markdown(ai_evaluation),
-        score=session['score'],
+        score=session.get('score', 0),
         total=total_questions(),
         performance=get_performance_metrics(),
     )
