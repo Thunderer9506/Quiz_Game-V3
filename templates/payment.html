@@ -162,7 +162,7 @@
           
           var options = {
             "key": orderData.key_id,
-            "amount": Number(orderData.amount), 
+            "amount": parseFloat(orderData.amount), 
             "currency": orderData.currency,
             "name": "Quiz App",
             "description": `Purchase ${orderData.credits} credits`,
@@ -197,10 +197,6 @@
                 console.error('Verification error:', error);
                 showNotification('Error verifying payment. Please contact support.', 'error');
               }
-            },
-            "prefill": {
-              "name": "Quiz App User",
-              "email": "user@example.com"
             },
             "theme": {
               "color": "#3399cc"
