@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{url_for('static', filename='css/base.css')}}" />
     <link rel="stylesheet" href="{{url_for('static', filename='css/home.css')}}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/payment.css') }}">
     <script src="https://kit.fontawesome.com/acee086188.js" crossorigin="anonymous"></script>
   </head>
   <body>
@@ -22,7 +23,7 @@
           <i class="fa-solid fa-moon icon"></i>
         </div>
       </header>
-
+    <div id="notification-container" class="notification-container"></div>
       <main class="hero">
         <div class="hero-text">
           <h1>Welcome, {{user.username}}</h1>
@@ -41,7 +42,13 @@
           </button>
         </form>
 
-        <div class="credits">Credits: {{user.credits}}</div>
+        <div class="credits-section">
+          <div class="credits">Credits: {{user.credits}}</div>
+          <a href="{{ url_for('payment_page') }}" class="buy-credits-btn">
+            <i class="fa-solid fa-shopping-cart"></i>
+            Buy Credits
+          </a>
+        </div>
       </main>
 
       <form action="{{url_for('logout')}}" method="get">
@@ -51,5 +58,17 @@
       </form>
     </div>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script>
+      // Handle flash messages from Flask
+      document.addEventListener('DOMContentLoaded', function() {
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              showNotification('{{ message }}', '{{ category }}');
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      });
+    </script>
   </body>
 </html>

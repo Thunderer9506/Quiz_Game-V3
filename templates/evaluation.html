@@ -6,6 +6,7 @@
     <title>Quiz App - AI Evaluation</title>
     <link rel="stylesheet" href="{{url_for('static',filename='css/base.css')}}">
     <link rel="stylesheet" href="{{url_for('static',filename='css/evaluation.css')}}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
     <script src="https://kit.fontawesome.com/acee086188.js" crossorigin="anonymous"></script>
   </head>
   <body>
@@ -19,6 +20,9 @@
         </label>
         <i class="fa-solid fa-moon icon"></i>
       </div>
+
+      <!-- Notification Container -->
+      <div id="notification-container" class="notification-container"></div>
 
       <div class="evaluation-container">
         <!-- Overall Score Section -->
@@ -119,5 +123,17 @@
       </div>
     </div>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script>
+      // Handle flash messages from Flask
+      document.addEventListener('DOMContentLoaded', function() {
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              showNotification('{{ message }}', '{{ category }}');
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      });
+    </script>
   </body>
 </html>
