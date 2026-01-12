@@ -14,16 +14,16 @@ def token_required(f):
         token = request.cookies.get("user_id")
         if not token:
             flash("Please login to continue", "error")
-            return redirect(url_for("login"))
+            return redirect(url_for("auth.login"))
         
         try:
             user_id = decode_jwt_token(token)
             if not user_id:
                 flash("Invalid token", "error")
-                return redirect(url_for("login"))
+                return redirect(url_for("auth.login"))
         except Exception as e:
             flash("Invalid token", "error")
-            return redirect(url_for("login"))
+            return redirect(url_for("auth.login"))
             
         return f(*args, **kwargs)
     return decorated
