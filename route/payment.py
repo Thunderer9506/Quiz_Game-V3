@@ -6,7 +6,6 @@ from utils.token_mangement import decode_jwt_token, token_required
 from logger_config import logger
 import razorpay
 import os
-import uuid
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,7 +42,7 @@ def payment():
         
         
         # Calculate amounts
-        credit_price = 2.00  # ₹2 per credit
+        credit_price = float(os.getenv("CREDITS_PER_PRICE"))
         subtotal = credits * credit_price
         fees = subtotal * 0.02  # 2% payment fees
         gst = (subtotal + fees) * 0.18  # 18% GST
