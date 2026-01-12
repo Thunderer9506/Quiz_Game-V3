@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buy Credits - Quiz App</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/base.css')}}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/payment.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+    <script src="https://kit.fontawesome.com/acee086188.js" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input" />
+
+    <div class="page-wrapper payment-page">
+      <header class="top-bar">
+        <div class="toggleMode">
+          <i class="fa-solid fa-sun icon"></i>
+          <label class="switch" for="theme-toggle">
+            <span class="slider"></span>
+          </label>
+          <i class="fa-solid fa-moon icon"></i>
+        </div>
+      </header>
+
+      <div id="notification-container" class="notification-container"></div>
+
+      <main class="payment-container">
+        <div class="payment-card">
+          <div class="payment-header">
+            <h1>Buy Credits</h1>
+            <p>Add credits to your account to continue generating quizzes</p>
+          </div>
+
+          <form action="{{ url_for('payment') }}" method="post" class="payment-form">
+            <div class="form-group">
+              <label for="credits">Number of Credits (Minimum: 5)</label>
+              <input 
+                type="number" 
+                id="credits" 
+                name="credits" 
+                min="5" 
+                value="5" 
+                required 
+                onchange="updateTotals()"
+              />
+            </div>
+
+            <div class="price-breakdown">
+              <div class="price-row">
+                <span class="price-label">Subtotal:</span>
+                <span class="price-value" id="subtotal">₹ 5.00</span>
+              </div>
+              <div class="price-row">
+                <span class="price-label">Payment Fees (2%):</span>
+                <span class="price-value" id="fees">₹ 0.10</span>
+              </div>
+              <div class="price-row">
+                <span class="price-label">GST (18%):</span>
+                <span class="price-value" id="gst">₹ 0.92</span>
+              </div>
+              <div class="price-row total">
+                <span class="price-label">Total:</span>
+                <span class="price-value" id="total">₹ 6.02</span>
+              </div>
+            </div>
+
+            <button type="submit" class="pay-btn">
+              <i class="fa-solid fa-lock"></i>
+              Buy Credits
+            </button>
+          </form>
+
+          <div class="back-link">
+            <a href="{{ url_for('home') }}">
+              <i class="fa-solid fa-arrow-left"></i>
+              Back to Home
+            </a>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script>
+      function updateTotals() {
+        const credits = parseInt(document.getElementById('credits').value) || 5;
+        const creditPrice = 2.00; // ₹2 per credit
+        
+        // Calculate amounts
+        const subtotal = credits * creditPrice;
+        const fees = subtotal * 0.02; // 2% payment fees
+        const gst = (subtotal + fees) * 0.18; // 18% GST
+        const total = subtotal + fees + gst;
+        
+        // Update display
+        document.getElementById('subtotal').textContent = '₹ ' + subtotal.toFixed(2);
+        document.getElementById('fees').textContent = '₹ ' + fees.toFixed(2);
+        document.getElementById('gst').textContent = '₹ ' + gst.toFixed(2);
+        document.getElementById('total').textContent = '₹ ' + total.toFixed(2);
+      }
+
+      function showNotificationAndRedirect(message, category, redirectUrl) {
+        // Show notification
+        showNotification(message, category);
+        
+        // Redirect after 3 seconds
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 3000);
+      }
+
+      // Handle flash messages from Flask and initialize on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              showNotificationAndRedirect('{{ message }}', '{{ category }}', '{{ url_for(home) }}');
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        
+        updateTotals();
+      });
+    </script>
+  </body>
+</html>
