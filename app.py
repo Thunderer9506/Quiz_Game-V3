@@ -21,6 +21,7 @@ import os
 import markdown
 import bleach
 import uuid
+import random
 
 # ----------------------------------- Config ------------------------------------------
 
@@ -64,6 +65,11 @@ def create_question(session_id, input):
         
         # Create questions
         for question in questions.questions:
+            # Shuffle options randomly if they exist
+            shuffled_options = question.Options.copy() if question.Options else []
+            if shuffled_options:
+                random.shuffle(shuffled_options)
+            
             new_question = Question(
                 id=str(uuid.uuid4()),
                 session_id=session_id,
@@ -72,7 +78,7 @@ def create_question(session_id, input):
                 question_type=question.Type,
                 category=question.Category,
                 difficulty=question.Difficulty,
-                options=question.Options,
+                options=shuffled_options,
                 correct_answer=question.Correct,
             )
             db.session.add(new_question)
