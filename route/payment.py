@@ -2,10 +2,14 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from models import db
 from sqlalchemy import select
 from schemas.user import User
-from utils import decode_jwt_token, token_required
+from utils.token_mangement import decode_jwt_token, token_required
+from logger_config import logger
 import razorpay
 import os
-import logging
+import uuid
+from dotenv import load_dotenv
+
+load_dotenv()
 
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
@@ -30,7 +34,7 @@ def payment_page():
 @token_required
 def payment():
     try:
-        credits = int(request.form.get("credits"))
+        credits = float(request.form.get("credits"))
         
         # Validate minimum credits
         if credits < 5:
@@ -48,9 +52,9 @@ def payment():
         amount_paise = total_amount * 100
         
         data = {
-            "amount": int(amount_paise),
+            "amount": float(amount_paise),
             "currency": "INR",
-            "receipt": "order_rcptid_11", # Optional: your internal order ID
+            "receipt": f"order_rcptid_{str(uuid.uuid1())}", # Optional: your internal order ID
             "payment_capture": 1 # Auto-capture payment
         }
 
@@ -61,19 +65,19 @@ def payment():
         session['pending_order'] = {
             'order_id': order['id'],
             'credits': credits,
-            'amount': int(total_amount)
+            'amount': float(total_amount)
         }
         
         return jsonify({
             "order_id": order['id'],
-            "amount": int(amount_paise),
+            "amount": float(amount_paise),
             "currency": "INR",
             "key_id": RAZORPAY_KEY_ID,
             "credits": credits
         })
         
     except Exception as e:
-        logging.error(f"Payment error: {e}")
+        logger.error(f"Payment error: {e}")
         flash("Payment failed. Please try again.", "error")
         return redirect(url_for("payment.payment_page"))
 
@@ -128,7 +132,7 @@ def verify_payment():
         # Clear session
         session.pop('pending_order', None)
         
-        logging.info(f"Payment verified: Added {credits_to_add} credits to user {user_id}")
+        logger.info(f"Payment verified: Added {credits_to_add} credits to user {user_id}")
         return jsonify({
             "status": "success", 
             "message": f"Payment verified successfully! {credits_to_add} credits added.",
@@ -139,7 +143,7 @@ def verify_payment():
     except razorpay.errors.SignatureVerificationError:
         return jsonify({"status": "failure", "message": "Payment verification failed"}), 400
     except Exception as e:
-        logging.error(f"Payment verification error: {e}")
+        logger.error(f"Payment verification error: {e}")
         return jsonify({"status": "failure", "message": "Payment verification failed"}), 500
 
 
@@ -156,7 +160,7 @@ def razorpay_webhook():
         # Verify webhook signature
         webhook_signature = request.headers.get('X-Razorpay-Signature')
         if not webhook_signature:
-            logging.warning("Webhook received without signature")
+            logger.warning("Webhook received without signature")
             return jsonify({"status": "error", "message": "Missing signature"}), 400
         
         # Generate expected signature
@@ -170,7 +174,7 @@ def razorpay_webhook():
         ).hexdigest()
         
         if not hmac.compare_digest(webhook_signature, expected_signature):
-            logging.warning("Invalid webhook signature")
+            logger.warning("Invalid webhook signature")
             return jsonify({"status": "error", "message": "Invalid signature"}), 400
         
         # Parse webhook payload
@@ -183,10 +187,10 @@ def razorpay_webhook():
             
             # Find user by order_id (you'd need to store order_id with user)
             # This is a simplified version - in production, you'd track orders properly
-            logging.info(f"Webhook: Payment captured for order {order_id}")
+            logger.info(f"Webhook: Payment captured for order {order_id}")
             
         return jsonify({"status": "success"})
         
     except Exception as e:
-        logging.error(f"Webhook error: {e}")
+        logger.error(f"Webhook error: {e}")
         return jsonify({"status": "error", "message": "Webhook processing failed"}), 500
