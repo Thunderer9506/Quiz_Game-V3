@@ -54,7 +54,6 @@ def payment():
         data = {
             "amount": float(amount_paise),
             "currency": "INR",
-            "receipt": f"order_rcptid_{str(uuid.uuid1())}", # Optional: your internal order ID
             "payment_capture": 1 # Auto-capture payment
         }
 
