@@ -1,0 +1,124 @@
+/* Auth page layout */
+.page-wrapper.auth-page {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+}
+
+/* Top bar with toggle */
+.top-bar {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Auth container */
+.auth-container {
+  width: min(450px, 100%);
+}
+
+/* Auth card */
+.auth-card {
+  background: var(--element-bg);
+  box-shadow: var(--element-shadow);
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Forms */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  border: 2px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 2rem;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-color);
+}
+
+/* Form groups */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 500;
+  color: var(--text-color);
+  font-size: 0.9rem;
+}
+
+.form-group input {
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--input-border);
+  border-radius: 0.75rem;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Rubik', sans-serif;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px rgba(167, 41, 245, 0.1);
+}
+
+.form-group input::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Auth footer */
+.auth-footer {
+  text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--input-border);
+}
+
+.auth-footer p {
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
+  font-family: 'Rubik', sans-serif;
+  font-size: 0.9rem;
+}
+
+.auth-link {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.auth-link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .page-wrapper.auth-page {
+    padding: 2rem 1.25rem;
+  }
+
+  .top-bar {
+    position: static;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+  }
+
+  .auth-card {
+    padding: 2rem 1.5rem;
+  }
+}

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz App - Question (MCQ)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/quizMCQ.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+    <script
+      src="https://kit.fontawesome.com/acee086188.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input" />
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <div class="page-wrapper quiz-page">
+      <div class="quiz-container">
+        <div class="quiz-header">
+          <div class="subjectIcon boxIcon">
+            <i
+              class="fa-solid fa-code"
+              style="background-color: #fff1e9; color: orange"
+            ></i>
+            <h2>{{ questions['Category'] | title }}</h2>
+          </div>
+
+          <div class="toggleMode">
+            <i class="fa-solid fa-sun icon"></i>
+            <label class="switch" for="theme-toggle">
+              <span class="slider"></span>
+            </label>
+            <i class="fa-solid fa-moon icon"></i>
+          </div>
+        </div>
+
+        <div class="quiz-main">
+          <div class="quiz-question-area">
+            <div class="question-header">
+              <p class="questionNo">
+                <i>Question {{ questions['QuestionNumber'] }} of {{ total_questions }}</i>
+              </p>
+              <div class="difficulty-badge difficulty-{{ questions['Difficulty'] | lower }}">
+                {{ questions['Difficulty'] }}
+              </div>
+            </div>
+            <h1 class="question">{{ questions['Question'] }}</h1>
+          </div>
+
+          <form
+            class="quiz-options-area"
+            action="{{ url_for('quiz', question_id=request.view_args['question_id']) }}"
+            method="post"
+          >
+            {% for item in questions['Options'] %}
+              <label class="choice boxIcon">
+                <input
+                  type="radio"
+                  name="answer"
+                  value="{{ loop.index }}"
+                  class="radio-input"
+                  required
+                />
+                <span class="choice-content">
+                    <i class="fa-solid fa-{{loop.index}}"></i>
+                    <p class="mcq">{{ item }}</p>
+                </span>
+              </label>
+            {% endfor %}
+            <button type="submit" class="submit">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script>
+      // Handle flash messages from Flask
+      document.addEventListener('DOMContentLoaded', function() {
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              showNotification('{{ message }}', '{{ category }}');
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      });
+    </script>
+  </body>
+</html>
+

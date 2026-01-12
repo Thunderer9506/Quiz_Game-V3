@@ -1,112 +1,152 @@
-# 🚀 Flask Quiz App
+# 🚀 AI-Powered Quiz Game V3
 
-A dynamic, full-stack quiz application built with Flask and Python. This app allows users to select a quiz category, difficulty, and type, then fetches questions from an external API, tracks their score, and displays the final result.
+A modern, full-stack quiz application powered by AI that generates dynamic questions, manages user authentication, handles payments, and provides a complete quiz experience with real-time evaluation.
 
-The project features a clean, modern, and responsive UI with a CSS-only light/dark mode toggle.
+## 📹 Video Demo
 
-### Demo Link
+Check out the complete demo video to see the app in action:
 
-**[View Live Demo](https://quiz-game-v3.onrender.com/)**
-
----
-
-### 📸 Screenshots
-
-#### 1. Home Page (Quiz Setup)
-The user selects their quiz options from the dropdowns.
-![Home Page](/Screenshot/Home%20Page.png)
-
-
-#### 2. Quiz Page (Question)
-The user answers a question. The UI is clean, and the radio buttons are custom-styled.
-![Quiz Page](/Screenshot/Quiz%20Page.png)
-
-
-#### 3. Score Page (Results)
-The final score is displayed, and the user can choose to play again.
-![Score Page](/Screenshot/Score%20Page.png)
-
+**[🎥 Watch Demo Video](./Demo/Quiz%20App%20DEMO%20Video.mp4)**
 
 ---
 
 ## ✨ Features
 
-* **Dynamic Quiz Generation:** Fetches questions (from the Open Trivia Database via `generateQuestion.py`) based on user-selected category, difficulty, and question type.
-* **CSS-Only Theme Toggle:** A smooth light/dark mode switch built entirely with CSS variables and a hidden checkbox, requiring no JavaScript.
-* **Secure Session Management:** Uses Flask's server-side `session` to securely track each user's quiz questions and score, allowing for multiple users at the same time.
-* **Responsive Design:** The UI is fully responsive and works on all device sizes.
-* **Clean Code Structure:** The backend logic is separated from the frontend, and the CSS is modularized into a `base.css` and page-specific files (`home.css`, `quiz.css`, `score.css`).
+### 🤖 AI-Powered Question Generation
+- **Dynamic Quiz Creation**: Uses LangChain with Groq AI to generate contextual questions based on user prompts
+- **Multiple Question Types**: Supports MCQ, True/False, and Text-based questions
+- **Smart Evaluation**: AI-powered evaluation and feedback on user answers
+- **Performance Metrics**: Tracks user performance by category and difficulty
+
+### 🔐 Complete User Management
+- **Secure Authentication**: JWT-based login/signup system with Argon2 password hashing
+- **Session Management**: Secure server-side session handling
+- **Credit System**: Users purchase credits to take quizzes
+- **Profile Management**: User dashboard with credit tracking
+
+### 💳 Payment Integration
+- **Razorpay Integration**: Complete payment gateway for credit purchases
+- **Secure Transactions**: Webhook-based payment verification
+- **Flexible Pricing**: User can choose as many credits as it wants
+- **Real-time Credit Updates**: Instant credit addition after successful payment
+
+### 🎨 Modern UI/UX
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
+- **Dark/Light Mode**: CSS-only theme toggle with smooth transitions
+- **Interactive Quiz Interface**: Engaging question display with difficulty indicators
+- **Error Handling**: Comprehensive error pages with user-friendly messages
+
+### 🏗️ Robust Architecture
+- **Modular Structure**: Clean separation of concerns with blueprints
+- **Database Integration**: PostgreSQL with SQLAlchemy ORM
+- **Logging System**: Comprehensive error logging and monitoring
+- **API Security**: Token-based route protection
 
 ---
 
 ## 🛠️ Tech Stack
 
-* **Backend:** Python, Flask
-* **Frontend:** HTML5, CSS3 (using CSS Variables and Flexbox)
-* **API:** Open Trivia Database (assumed)
-* **Icons:** Font Awesome
+### Backend
+- **Framework**: Flask with Python 3.12+
+- **Database**: PostgreSQL with SQLAlchemy ORM
+- **Authentication**: JWT tokens with Argon2 password hashing
+- **AI Integration**: LangChain with Groq API
+- **Payment**: Razorpay payment gateway
+- **Migration**: Flask-Migrate for database versioning
+
+### Frontend
+- **Templates**: Jinja2 with modern HTML5
+- **Styling**: CSS3 with CSS Variables and Flexbox
+- **Icons**: Font Awesome
+- **Responsive**: Mobile-first design approach
+
+### Development Tools
+- **Package Management**: pyproject.toml with modern Python packaging
+- **Environment**: dotenv for configuration management
+- **Logging**: Python logging with file and console handlers
+- **Error Handling**: Global exception handlers with custom error pages
 
 ---
 
-## 🚀 Getting Started
+## 📁 Project Structure
 
-To run this project on your local machine, follow these steps.
-
-### Prerequisites
-
-* Python 3.x
-* `pip` (Python package installer)
-
-### Installation
-
-1.  **Clone the repository:**
-    ```sh
-    git clone [https://github.com/Thunderer9506/Quiz_Game-V3](https://github.com/Thunderer9506/Quiz_Game-V3)
-    cd your-repo-name
-    ```
-
-2.  **Create and activate a virtual environment:**
-    * **Windows:**
-        ```sh
-        python -m venv venv
-        .\venv\Scripts\activate
-        ```
-    * **macOS / Linux:**
-        ```sh
-        python3 -m venv venv
-        source venv/bin/activate
-        ```
-
-3.  **Install the required packages:**
-    (You'll need a `requirements.txt` file for this. Based on our code, it should contain `Flask` and `requests`.)
-    ```sh
-    pip install Flask requests
-    ```
-
-4.  **Set the Flask Secret Key:**
-    In `app.py`, change the `app.secret_key` to your own random, secure string:
-    ```python
-    # In app.py
-    app.secret_key = 'your-own-very-secret-key'
-    ```
-
-5.  **Run the application:**
-    ```sh
-    flask run
-    ```
-    Or in debug mode:
-    ```sh
-    python app.py
-    ```
-
-6.  Open your browser and navigate to `http://127.0.0.1:5000/`.
+```
+Quiz_Game-V3/
+├── agents/                 # AI agents for question generation and evaluation
+│   ├── QuestionAgent.py    # Handles question generation
+│   └── EvaluationAgent.py  # Handles answer evaluation
+├── route/                  # Flask blueprints
+│   ├── auth.py            # Authentication routes
+│   └── payment.py         # Payment processing routes
+├── utils/                  # Utility functions
+│   ├── token_mangement.py # JWT token handling
+│   └── session_management.py # Session utilities
+├── schemas/               # Database models
+│   ├── user.py           # User model
+│   ├── question.py       # Question model
+│   └── quiz_session.py   # Session model
+├── static/               # Static assets
+│   ├── css/             # Stylesheets
+│   └── js/              # JavaScript files
+├── templates/           # HTML templates
+├── migrations/          # Database migrations
+├── Demo/               # Demo video
+└── app.py             # Main application file
+```
 
 ---
 
-## 🙏 Acknowledgements & Inspiration
+## 🎯 How It Works
 
-This project's design and structure were inspired by the following repositories.
-*(Please add the links to the two repos you mentioned.)*
+1. **User Registration**: Users create accounts with secure password hashing
+2. **Credit Purchase**: Users buy credits using Razorpay payment gateway
+3. **Quiz Generation**: Users input prompts, AI generates contextual questions
+4. **Interactive Quiz**: Users answer questions with real-time feedback
+5. **AI Evaluation**: AI evaluates answers and provides detailed feedback
+6. **Performance Tracking**: System tracks performance metrics and progress
 
-* **[Quiz-Game-V2](https://github.com/Thunderer9506/Quiz_Game-V2)**
-* **[Quiz-Game-Webpage](https://github.com/Thunderer9506/Quiz-App.github.io)**
+---
+
+## 🔧 Configuration
+
+### AI Model Configuration
+- Default model: `llama3-70b-8192`
+- Configurable via `GROQ_MODEL` environment variable
+- Supports temperature and other model parameters
+
+### Payment Configuration
+- Test mode: Use Razorpay test keys for development
+- Live mode: Use production keys for deployment
+- Webhook URL: Configure for payment confirmations
+
+### Database Configuration
+- Supports PostgreSQL with connection pooling
+- Automatic migrations with Flask-Migrate
+- Session management with secure cookies
+
+---
+
+
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+---
+
+## 🆘 Support
+
+For support, please:
+1. Check the demo video for common workflows
+2. Review the error logs in `mainApp.log`
+3. Create an issue with detailed information
+4. Include environment details and error messages
+
+---
+
+**Built with ❤️ using Flask, AI, and modern web technologies**
+

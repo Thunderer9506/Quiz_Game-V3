@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buy Credits - Quiz App</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/base.css')}}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/payment.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+    <script src="https://kit.fontawesome.com/acee086188.js" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input" />
+
+    <div class="page-wrapper payment-page">
+      <header class="top-bar">
+        <div class="toggleMode">
+          <i class="fa-solid fa-sun icon"></i>
+          <label class="switch" for="theme-toggle">
+            <span class="slider"></span>
+          </label>
+          <i class="fa-solid fa-moon icon"></i>
+        </div>
+      </header>
+
+      <div id="notification-container" class="notification-container"></div>
+
+      <main class="payment-container">
+        <div class="payment-card">
+          <div class="payment-header">
+            <h1>Buy Credits</h1>
+            <p>Add credits to your account to continue generating quizzes</p>
+          </div>
+
+          <form id="payment-form" class="payment-form">
+            <div class="form-group">
+              <label for="credits">Number of Credits (Minimum: 5)</label>
+              <input 
+                type="number" 
+                id="credits" 
+                name="credits" 
+                min="5" 
+                value="5" 
+                required 
+              />
+            </div>
+
+            <div class="price-breakdown">
+              <div class="price-row">
+                <span class="price-label">Subtotal:</span>
+                <span class="price-value" id="subtotal">₹ 5.00</span>
+              </div>
+              <div class="price-row">
+                <span class="price-label">Payment Fees (2%):</span>
+                <span class="price-value" id="fees">₹ 0.10</span>
+              </div>
+              <div class="price-row">
+                <span class="price-label">GST (18%):</span>
+                <span class="price-value" id="gst">₹ 0.92</span>
+              </div>
+              <div class="price-row total">
+                <span class="price-label">Total:</span>
+                <span class="price-value" id="total">₹ 6.02</span>
+              </div>
+            </div>
+
+            <button type="button" id="rzp-button1" class="pay-btn">
+              <i class="fa-solid fa-lock"></i>
+              Buy Credits
+            </button>
+          </form>
+
+          <div class="back-link">
+            <a href="{{ url_for('home') }}">
+              <i class="fa-solid fa-arrow-left"></i>
+              Back to Home
+            </a>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script>
+      document.querySelector('#credits').addEventListener('input', function() {
+      
+        const credits = parseInt(document.getElementById('credits').value) || 5;
+        const creditPrice = 2.00; // ₹2 per credit
+        
+        // Calculate amounts
+        const subtotal = credits * creditPrice;
+        const fees = subtotal * 0.02; // 2% payment fees
+        const gst = (subtotal + fees) * 0.18; // 18% GST
+        const total = subtotal + fees + gst;
+        
+        // Update display
+        document.getElementById('subtotal').textContent = '₹ ' + subtotal.toFixed(2);
+        document.getElementById('fees').textContent = '₹ ' + fees.toFixed(2);
+        document.getElementById('gst').textContent = '₹ ' + gst.toFixed(2);
+        document.getElementById('total').textContent = '₹ ' + total.toFixed(2);
+      });
+
+      function showNotificationAndRedirect(message, category, redirectUrl) {
+        // Show notification
+        showNotification(message, category);
+        
+        // Redirect after 3 seconds
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 3000);
+      }
+
+      // Handle flash messages from Flask and initialize on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              showNotificationAndRedirect('{{ message }}', '{{ category }}', "{{ url_for('home') }}");
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        
+        updateTotals();
+      });
+    </script>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+      let orderData = null;
+      
+      document.getElementById('rzp-button1').onclick = async function (e) {
+        e.preventDefault();
+        
+        const credits = parseInt(document.getElementById('credits').value);
+        if (credits < 5) {
+          showNotification('Minimum 5 credits required', 'error');
+          return;
+        }
+        
+        try {
+          // Create order
+          const response = await fetch('/payment/payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `credits=${credits}`
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Failed to create order', 'error');
+            return;
+          }
+          
+          orderData = await response.json();
+          
+          if (orderData.error) {
+            showNotification("Error creating order: " + orderData.error, 'error');
+            return;
+          }
+          
+          var options = {
+            "key": orderData.key_id,
+            "amount": Number(orderData.amount), 
+            "currency": orderData.currency,
+            "name": "Quiz App",
+            "description": `Purchase ${orderData.credits} credits`,
+            "order_id": orderData.order_id,
+            "handler": async function (response) {
+              showNotification('Verifying payment...', 'info');
+              
+              try {
+                // Send payment details to backend for verification
+                const verifyResponse = await fetch('/payment/verify_payment', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_signature: response.razorpay_signature
+                  })
+                });
+
+                const verifyResult = await verifyResponse.json();
+
+                if (verifyResult.status === 'success') {
+                  showNotification(`Payment Successful! ${verifyResult.credits_added} credits added. Total: ${verifyResult.total_credits}`, 'success');
+                  // Redirect to home after 3 seconds
+                  setTimeout(() => {
+                    window.location.href = '/home';
+                  }, 3000);
+                } else {
+                  showNotification('Payment verification failed: ' + verifyResult.message, 'error');
+                }
+              } catch (error) {
+                console.error('Verification error:', error);
+                showNotification('Error verifying payment. Please contact support.', 'error');
+              }
+            },
+            "theme": {
+              "color": "#3399cc"
+            }
+          };
+          
+          const rzp1 = new Razorpay(options);
+          
+          rzp1.on('payment.failed', function (response){
+            console.error('Payment failed:', response.error);
+            showNotification('Payment Failed: ' + response.error.description, 'error');
+          });
+
+          rzp1.open();
+          
+        } catch (error) {
+          console.error('Error creating order:', error);
+          showNotification('An error occurred while creating the order. Please try again.', 'error');
+        }
+      };
+    </script>
+  </body>
+</html>
