@@ -11,6 +11,9 @@ from schemas.quiz_session import Sessions
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 
+from route.payment import payment_bp
+from utils import token_required, decode_jwt_token
+
 from dotenv import load_dotenv
 import os
 import markdown
@@ -28,8 +31,11 @@ from functools import wraps
 load_dotenv()
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:admin@localhost:5432/quiz_app"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("POSTGRES_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+app.register_blueprint(payment_bp)
+
 migrate = Migrate(app, db)
 db.init_app(app)
 migrate.init_app(app, db)
@@ -59,39 +65,12 @@ logger.setLevel(logging.DEBUG)
 
 # ----------------------------------- Usefull Functions ------------------------------------------
 
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = request.cookies.get("user_id")
-        if not token:
-            return redirect(url_for("index"))
-        
-        try:
-            user_id = decode_jwt_token(token)
-            if not user_id:
-                return redirect(url_for("index"))
-        except:
-            return redirect(url_for("index"))
-        
-        # Add user to request context
-        return f(*args, **kwargs)
-    return decorated
-
 def generate_jwt_token(user_id):
     payload = {
         'user_id': user_id,
         'exp': dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=JWT_EXPIRATION_HOURS)
     }
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
-
-def decode_jwt_token(token):
-    try:
-        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-        return payload['user_id']
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
-        return None
 
 def create_session(session_id, title):
     try:
@@ -466,51 +445,7 @@ def score():
         performance=get_performance_metrics(),
     )
 
-@app.route("/payment_page")
-@token_required
-def payment_page():
-    return render_template("payment.html")
 
-
-@app.route("/payment", methods=["POST"])
-@token_required
-def payment():
-    try:
-        credits = int(request.form.get("credits"))
-        user_id = decode_jwt_token(request.cookies.get("user_id"))
-        
-        # Validate minimum credits
-        if credits < 5:
-            flash("Minimum 5 credits required", "error")
-            return redirect(url_for("payment_page"))
-        
-        # Get user from JWT token
-        stmt = select(User).where(User.id == user_id)
-        user = db.session.execute(stmt).scalar()
-        
-        if not user:
-            flash("User not found", "error")
-            return redirect(url_for("home"))
-        
-        # Calculate amounts
-        credit_price = 2.00  # ₹2 per credit
-        subtotal = credits * credit_price
-        fees = subtotal * 0.02  # 2% payment fees
-        gst = (subtotal + fees) * 0.18  # 18% GST
-        total_amount = subtotal + fees + gst
-        
-        # For now, just add credits (in real implementation, integrate with payment gateway)
-        user.credits = user.credits + credits
-        db.session.commit()
-        
-        flash(f"Successfully purchased {credits} credits for ₹{total_amount:.2f}!", "success")
-        
-        return redirect(url_for("home"))
-        
-    except Exception as e:
-        logger.error(f"Payment error: {e}")
-        flash("Payment failed. Please try again.", "error")
-        return redirect(url_for("home"))
 
 
 if __name__ == "__main__":
