@@ -60,7 +60,7 @@ class Agent:
             if os.getenv("GROQ_API_KEY"):
                 os.environ['GROQ_API_KEY'] = os.getenv("GROQ_API_KEY")
             self.model = ChatGroq(
-                model="openai/gpt-oss-120b",
+                model=os.getenv("GROQ_MODEL"),
                 temperature=0.8,
             )
             self.agent = create_agent(
@@ -82,12 +82,3 @@ class Agent:
         except Exception as e:
             raise QuestionAgentError(f"Failed to generate questions: {e}")
             
-
-# if __name__ == "__main__":
-#     agent = Agent()
-#     while True:
-#         question = agent.getQuestion("Generate 15 questions, as if you are taking a mock test of software engineering")
-#         print(question)
-#         if input("Continue? (y/n): ") != "y":
-#             break
-    

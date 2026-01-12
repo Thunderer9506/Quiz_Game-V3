@@ -15,7 +15,7 @@ class Agent:
     def __init__(self):
         os.environ['GROQ_API_KEY'] = os.getenv("GROQ_API_KEY") #type:ignore
         self.model = ChatGroq(
-            model="openai/gpt-oss-120b",
+            model=os.getenv("GROQ_MODEL"),
             temperature=0.8,
         )
         self.agent = create_agent(
@@ -25,9 +25,9 @@ class Agent:
         )
         
         
-    def evaluate(self,input:str):
+    def evaluate(self,input:str,session:str):
         result = self.agent.invoke({"messages": HumanMessage(input)},
-                            config={"configurable": {"thread_id": "1"}}
+                            config={"configurable": {"thread_id": session}}
                         )
         return result['messages'][-1].content
     
