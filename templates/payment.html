@@ -32,7 +32,7 @@
             <p>Add credits to your account to continue generating quizzes</p>
           </div>
 
-          <form action="{{ url_for('payment') }}" method="post" class="payment-form">
+          <form id="payment-form" class="payment-form">
             <div class="form-group">
               <label for="credits">Number of Credits (Minimum: 5)</label>
               <input 
@@ -42,7 +42,6 @@
                 min="5" 
                 value="5" 
                 required 
-                onchange="updateTotals()"
               />
             </div>
 
@@ -65,7 +64,7 @@
               </div>
             </div>
 
-            <button type="submit" class="pay-btn">
+            <button type="button" id="rzp-button1" class="pay-btn">
               <i class="fa-solid fa-lock"></i>
               Buy Credits
             </button>
@@ -83,7 +82,8 @@
 
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     <script>
-      function updateTotals() {
+      document.querySelector('#credits').addEventListener('input', function() {
+      
         const credits = parseInt(document.getElementById('credits').value) || 5;
         const creditPrice = 2.00; // ₹2 per credit
         
@@ -98,7 +98,7 @@
         document.getElementById('fees').textContent = '₹ ' + fees.toFixed(2);
         document.getElementById('gst').textContent = '₹ ' + gst.toFixed(2);
         document.getElementById('total').textContent = '₹ ' + total.toFixed(2);
-      }
+      });
 
       function showNotificationAndRedirect(message, category, redirectUrl) {
         // Show notification
@@ -115,13 +115,112 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, message in messages %}
-              showNotificationAndRedirect('{{ message }}', '{{ category }}', '{{ url_for(home) }}');
+              showNotificationAndRedirect('{{ message }}', '{{ category }}', "{{ url_for('home') }}");
             {% endfor %}
           {% endif %}
         {% endwith %}
         
         updateTotals();
       });
+    </script>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+      let orderData = null;
+      
+      document.getElementById('rzp-button1').onclick = async function (e) {
+        e.preventDefault();
+        
+        const credits = parseInt(document.getElementById('credits').value);
+        if (credits < 5) {
+          showNotification('Minimum 5 credits required', 'error');
+          return;
+        }
+        
+        try {
+          // Create order
+          const response = await fetch('/payment/payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `credits=${credits}`
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Failed to create order', 'error');
+            return;
+          }
+          
+          orderData = await response.json();
+          
+          if (orderData.error) {
+            showNotification("Error creating order: " + orderData.error, 'error');
+            return;
+          }
+          
+          var options = {
+            "key": orderData.key_id,
+            "amount": Number(orderData.amount), 
+            "currency": orderData.currency,
+            "name": "Quiz App",
+            "description": `Purchase ${orderData.credits} credits`,
+            "order_id": orderData.order_id,
+            "handler": async function (response) {
+              showNotification('Verifying payment...', 'info');
+              
+              try {
+                // Send payment details to backend for verification
+                const verifyResponse = await fetch('/payment/verify_payment', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_signature: response.razorpay_signature
+                  })
+                });
+
+                const verifyResult = await verifyResponse.json();
+
+                if (verifyResult.status === 'success') {
+                  showNotification(`Payment Successful! ${verifyResult.credits_added} credits added. Total: ${verifyResult.total_credits}`, 'success');
+                  // Redirect to home after 3 seconds
+                  setTimeout(() => {
+                    window.location.href = '/home';
+                  }, 3000);
+                } else {
+                  showNotification('Payment verification failed: ' + verifyResult.message, 'error');
+                }
+              } catch (error) {
+                console.error('Verification error:', error);
+                showNotification('Error verifying payment. Please contact support.', 'error');
+              }
+            },
+            "prefill": {
+              "name": "Quiz App User",
+              "email": "user@example.com"
+            },
+            "theme": {
+              "color": "#3399cc"
+            }
+          };
+          
+          const rzp1 = new Razorpay(options);
+          
+          rzp1.on('payment.failed', function (response){
+            console.error('Payment failed:', response.error);
+            showNotification('Payment Failed: ' + response.error.description, 'error');
+          });
+
+          rzp1.open();
+          
+        } catch (error) {
+          console.error('Error creating order:', error);
+          showNotification('An error occurred while creating the order. Please try again.', 'error');
+        }
+      };
     </script>
   </body>
 </html>

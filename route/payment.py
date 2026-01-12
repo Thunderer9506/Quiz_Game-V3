@@ -1,0 +1,192 @@
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
+from models import db
+from sqlalchemy import select
+from schemas.user import User
+from utils import decode_jwt_token, token_required
+import razorpay
+import os
+import logging
+
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
+
+client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+
+payment_bp = Blueprint(
+    'payment', 
+    __name__, 
+    template_folder='templates', # Specifies the blueprint's template folder
+    url_prefix='/payment'           # All routes in this blueprint will start with /payment
+)
+
+
+@payment_bp.route("/payment_page")
+@token_required
+def payment_page():
+    return render_template("payment.html")
+
+
+@payment_bp.route("/payment", methods=["POST"])
+@token_required
+def payment():
+    try:
+        credits = int(request.form.get("credits"))
+        
+        # Validate minimum credits
+        if credits < 5:
+            flash("Minimum 5 credits required", "error")
+            return redirect(url_for("payment_page"))
+        
+        
+        # Calculate amounts
+        credit_price = 2.00  # ₹2 per credit
+        subtotal = credits * credit_price
+        fees = subtotal * 0.02  # 2% payment fees
+        gst = (subtotal + fees) * 0.18  # 18% GST
+        total_amount = subtotal + fees + gst
+
+        amount_paise = total_amount * 100
+        
+        data = {
+            "amount": int(amount_paise),
+            "currency": "INR",
+            "receipt": "order_rcptid_11", # Optional: your internal order ID
+            "payment_capture": 1 # Auto-capture payment
+        }
+
+        # Create order via Razorpay API
+        order = client.order.create(data=data)
+        
+        # Store order details in session for verification
+        session['pending_order'] = {
+            'order_id': order['id'],
+            'credits': credits,
+            'amount': int(total_amount)
+        }
+        
+        return jsonify({
+            "order_id": order['id'],
+            "amount": int(amount_paise),
+            "currency": "INR",
+            "key_id": RAZORPAY_KEY_ID,
+            "credits": credits
+        })
+        
+    except Exception as e:
+        logging.error(f"Payment error: {e}")
+        flash("Payment failed. Please try again.", "error")
+        return redirect(url_for("payment.payment_page"))
+
+
+@payment_bp.route('/verify_payment', methods=['POST'])
+@token_required
+def verify_payment():
+    """
+    1. Receive payment_id, order_id, and signature from frontend.
+    2. Verify the signature using Razorpay utility.
+    3. If valid, update your database (add credits to user).
+    """
+    data = request.json
+    
+    razorpay_payment_id = data.get('razorpay_payment_id')
+    razorpay_order_id = data.get('razorpay_order_id')
+    razorpay_signature = data.get('razorpay_signature')
+
+    # Create the dictionary required for verification
+    params_dict = {
+        'razorpay_order_id': razorpay_order_id,
+        'razorpay_payment_id': razorpay_payment_id,
+        'razorpay_signature': razorpay_signature
+    }
+
+    try:
+        # This will raise a SignatureVerificationError if verification fails
+        client.utility.verify_payment_signature(params_dict)
+        
+        # --- SUCCESS ---
+        # Get pending order details from session
+        pending_order = session.get('pending_order')
+        if not pending_order:
+            return jsonify({"status": "failure", "message": "Order details not found"}), 400
+        
+        # Verify order matches
+        if pending_order['order_id'] != razorpay_order_id:
+            return jsonify({"status": "failure", "message": "Order mismatch"}), 400
+        
+        user_id = decode_jwt_token(request.cookies.get("user_id"))
+        stmt = select(User).where(User.id == user_id)
+        user = db.session.execute(stmt).scalar()
+        
+        if not user:
+            return jsonify({"status": "failure", "message": "User not found"}), 404
+        
+        # Add credits to user account
+        credits_to_add = pending_order['credits']
+        user.credits += credits_to_add
+        db.session.commit()
+        
+        # Clear session
+        session.pop('pending_order', None)
+        
+        logging.info(f"Payment verified: Added {credits_to_add} credits to user {user_id}")
+        return jsonify({
+            "status": "success", 
+            "message": f"Payment verified successfully! {credits_to_add} credits added.",
+            "credits_added": credits_to_add,
+            "total_credits": user.credits
+        })
+
+    except razorpay.errors.SignatureVerificationError:
+        return jsonify({"status": "failure", "message": "Payment verification failed"}), 400
+    except Exception as e:
+        logging.error(f"Payment verification error: {e}")
+        return jsonify({"status": "failure", "message": "Payment verification failed"}), 500
+
+
+@payment_bp.route('/webhook', methods=['POST'])
+def razorpay_webhook():
+    """
+    Razorpay webhook handler for payment confirmations
+    This provides a backup verification mechanism
+    """
+    try:
+        # Get webhook secret from environment
+        webhook_secret = os.getenv("RAZORPAY_WEBHOOK_SECRET")
+        
+        # Verify webhook signature
+        webhook_signature = request.headers.get('X-Razorpay-Signature')
+        if not webhook_signature:
+            logging.warning("Webhook received without signature")
+            return jsonify({"status": "error", "message": "Missing signature"}), 400
+        
+        # Generate expected signature
+        import hmac
+        import hashlib
+        
+        expected_signature = hmac.new(
+            webhook_secret.encode('utf-8'),
+            request.data,
+            hashlib.sha256
+        ).hexdigest()
+        
+        if not hmac.compare_digest(webhook_signature, expected_signature):
+            logging.warning("Invalid webhook signature")
+            return jsonify({"status": "error", "message": "Invalid signature"}), 400
+        
+        # Parse webhook payload
+        payload = request.json
+        event = payload.get('event')
+        
+        if event == 'payment.captured':
+            payment_data = payload.get('payload', {}).get('payment', {}).get('entity', {})
+            order_id = payment_data.get('order_id')
+            
+            # Find user by order_id (you'd need to store order_id with user)
+            # This is a simplified version - in production, you'd track orders properly
+            logging.info(f"Webhook: Payment captured for order {order_id}")
+            
+        return jsonify({"status": "success"})
+        
+    except Exception as e:
+        logging.error(f"Webhook error: {e}")
+        return jsonify({"status": "error", "message": "Webhook processing failed"}), 500
