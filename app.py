@@ -236,6 +236,42 @@ def score():
     )
 
 
+# ----------------------------------- Global Error Handlers ------------------------------------------
+
+def show_error_page(error_code, error_description):
+    """Utility function to show error page with custom message"""
+    logger.error(f"Manual Error Triggered: {error_code} - {error_description}")
+    return render_template('error.html', error_no=error_code, error_desc=error_description), error_code
+
+@app.errorhandler(404)
+def not_found_error(error):
+    """Handle 404 Not Found errors"""
+    logger.error(f"404 Not Found: {request.url} - {error}")
+    return render_template('error.html', error_no='404', error_desc='The page you are looking for does not exist.'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    """Handle 500 Internal Server Error"""
+    logger.error(f"500 Internal Server Error: {request.url} - {error}")
+    return render_template('error.html', error_no='500', error_desc='An internal server error occurred. Please try again later.'), 500
+
+@app.errorhandler(403)
+def forbidden_error(error):
+    """Handle 403 Forbidden errors"""
+    logger.error(f"403 Forbidden: {request.url} - {error}")
+    return render_template('error.html', error_no='403', error_desc='You do not have permission to access this resource.'), 403
+
+@app.errorhandler(400)
+def bad_request_error(error):
+    """Handle 400 Bad Request errors"""
+    logger.error(f"400 Bad Request: {request.url} - {error}")
+    return render_template('error.html', error_no='400', error_desc='The server could not understand your request.'), 400
+
+@app.errorhandler(Exception)
+def handle_exception(error):
+    """Handle all unhandled exceptions"""
+    logger.error(f"Unhandled Exception: {request.url} - {type(error).__name__}: {str(error)}", exc_info=True)
+    return render_template('error.html', error_no='500', error_desc='An unexpected error occurred. Please try again later.'), 500
 
 
 if __name__ == "__main__":
