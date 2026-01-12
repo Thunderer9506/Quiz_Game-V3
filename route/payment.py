@@ -39,7 +39,7 @@ def payment():
             return redirect(url_for("payment.payment_page"))
 
         try:
-            credits = float(credits_raw)
+            credits = int(credits_raw)
         except (TypeError, ValueError):
             flash("Invalid credits", "error")
             return redirect(url_for("payment.payment_page"))
@@ -60,7 +60,7 @@ def payment():
             flash("Payment configuration missing. Please try again later.", "error")
             return redirect(url_for("payment.payment_page"))
 
-        credit_price = float(credit_price_raw)
+        credit_price = int(credit_price_raw)
         subtotal = credits * credit_price
         fees = subtotal * 0.02  # 2% payment fees
         gst = (subtotal + fees) * 0.18  # 18% GST
@@ -69,7 +69,7 @@ def payment():
         amount_paise = total_amount * 100
         
         data = {
-            "amount": float(amount_paise),
+            "amount": int(amount_paise),
             "currency": "INR",
             "payment_capture": 1 # Auto-capture payment
         }
@@ -81,12 +81,12 @@ def payment():
         session['pending_order'] = {
             'order_id': order['id'],
             'credits': credits,
-            'amount': float(total_amount)
+            'amount': int(total_amount)
         }
         
         return jsonify({
             "order_id": order['id'],
-            "amount": float(amount_paise),
+            "amount": int(amount_paise),
             "currency": "INR",
             "key_id": RAZORPAY_KEY_ID,
             "credits": credits

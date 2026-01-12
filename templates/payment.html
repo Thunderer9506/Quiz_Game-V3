@@ -162,7 +162,7 @@
           
           var options = {
             "key": orderData.key_id,
-            "amount": parseFloat(orderData.amount), 
+            "amount": Number(orderData.amount), 
             "currency": orderData.currency,
             "name": "Quiz App",
             "description": `Purchase ${orderData.credits} credits`,
