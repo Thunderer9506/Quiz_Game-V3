@@ -466,6 +466,53 @@ def score():
         performance=get_performance_metrics(),
     )
 
+@app.route("/payment_page")
+@token_required
+def payment_page():
+    return render_template("payment.html")
+
+
+@app.route("/payment", methods=["POST"])
+@token_required
+def payment():
+    try:
+        credits = int(request.form.get("credits"))
+        user_id = decode_jwt_token(request.cookies.get("user_id"))
+        
+        # Validate minimum credits
+        if credits < 5:
+            flash("Minimum 5 credits required", "error")
+            return redirect(url_for("payment_page"))
+        
+        # Get user from JWT token
+        stmt = select(User).where(User.id == user_id)
+        user = db.session.execute(stmt).scalar()
+        
+        if not user:
+            flash("User not found", "error")
+            return redirect(url_for("home"))
+        
+        # Calculate amounts
+        credit_price = 2.00  # ₹2 per credit
+        subtotal = credits * credit_price
+        fees = subtotal * 0.02  # 2% payment fees
+        gst = (subtotal + fees) * 0.18  # 18% GST
+        total_amount = subtotal + fees + gst
+        
+        # For now, just add credits (in real implementation, integrate with payment gateway)
+        user.credits = user.credits + credits
+        db.session.commit()
+        
+        flash(f"Successfully purchased {credits} credits for ₹{total_amount:.2f}!", "success")
+        
+        return redirect(url_for("home"))
+        
+    except Exception as e:
+        logger.error(f"Payment error: {e}")
+        flash("Payment failed. Please try again.", "error")
+        return redirect(url_for("home"))
+
+
 if __name__ == "__main__":
     logger.debug("Server Started")
     app.run(debug=True, host="0.0.0.0")
