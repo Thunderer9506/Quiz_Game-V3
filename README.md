@@ -6,7 +6,7 @@ A modern, full-stack quiz application powered by AI that generates dynamic quest
 
 Check out the complete demo video to see the app in action:
 
-**[🎥 Watch Demo Video](./Demo/Quiz%20App%20DEMO%20Video.mp4)**
+![Video title](./Demo/Quiz%20App%20Demo.gif)
 
 ---
 
